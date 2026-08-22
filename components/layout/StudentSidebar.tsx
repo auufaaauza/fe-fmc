@@ -31,29 +31,33 @@ export function StudentSidebar() {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Close mobile drawer on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
+  const navLinkBase =
+    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150";
+  const navLinkActive = "bg-indigo-50 text-indigo-700";
+  const navLinkInactive = "text-slate-600 hover:bg-slate-100 hover:text-slate-900";
+
   return (
     <>
-      {/* ── Mobile Top Header (Visible only on < md) ── */}
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b-4 border-black bg-yellow-400 px-4 py-2.5 md:hidden shadow-[0px_2px_0px_0px_#000]">
+      {/* ── Mobile Top Header ── */}
+      <header className="nb-header sticky top-0 z-30 flex items-center justify-between px-4 py-3 shadow-sm md:hidden">
         <div className="flex items-center gap-2.5">
           <Image
             src="/image/logo.png"
             alt="Find My Career"
             width={120}
             height={120}
-            className="h-10 w-auto object-contain"
+            className="h-8 w-auto object-contain"
             priority
           />
           <div className="flex flex-col">
-            <span className="text-sm font-black tracking-tight text-black leading-none">
-              FIND MY CAREER
+            <span className="text-sm font-semibold text-slate-800 leading-none">
+              Find My Career
             </span>
-            <span className="text-[9px] font-bold text-gray-800">
+            <span className="text-[10px] text-slate-500 mt-0.5">
               Portal Siswa
             </span>
           </div>
@@ -62,85 +66,83 @@ export function StudentSidebar() {
         <button
           type="button"
           onClick={() => setMobileOpen((prev) => !prev)}
-          className="border-2 border-black bg-white p-1.5 shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+          className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/70"
           aria-label="Toggle menu"
         >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </header>
 
-      {/* ── Mobile Drawer Overlay ── */}
+      {/* ── Mobile Overlay ── */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/20 backdrop-blur-sm md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* ── Sidebar (Desktop Fixed & Mobile Slide Drawer) ── */}
+      {/* ── Sidebar ── */}
       <aside
         className={cn(
-          "nb-sidebar fixed inset-y-0 left-0 z-50 flex w-72 flex-col justify-between bg-white p-5 transition-transform duration-200 ease-in-out md:static md:w-64 md:translate-x-0 md:min-h-screen",
+          "nb-sidebar fixed inset-y-0 left-0 z-50 flex w-72 flex-col justify-between p-5 transition-transform duration-200 ease-in-out md:static md:w-64 md:translate-x-0 md:min-h-screen",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div>
-          {/* Brand Logo Header */}
-          <div className="mb-5 border-b-2 border-black pb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 w-full">
-                <Image
-                  src="/image/logo.png"
-                  alt="Find My Career"
-                  width={140}
-                  height={140}
-                  className="h-14 w-14 shrink-0 object-contain"
-                  priority
-                />
-                <div className="flex flex-col">
-                  <span className="text-base font-black tracking-tight text-black leading-tight uppercase">
-                    Find My <span className="text-pink-600">Career</span>
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mt-0.5">
-                    Portal Siswa
-                  </span>
-                </div>
+          {/* Brand */}
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Image
+                src="/image/logo.png"
+                alt="Find My Career"
+                width={140}
+                height={140}
+                className="h-10 w-10 shrink-0 object-contain"
+                priority
+              />
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-slate-800 leading-tight">
+                  Find My Career
+                </span>
+                <span className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wide">
+                  Portal Siswa
+                </span>
               </div>
-              <button
-                type="button"
-                onClick={() => setMobileOpen(false)}
-                className="border-2 border-black bg-white p-1 md:hidden shrink-0"
-              >
-                <X className="h-5 w-5" />
-              </button>
             </div>
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors md:hidden"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
 
-          {/* Student Info Card */}
+          {/* Student Info */}
           {user && (
-            <div className="mb-5 border-2 border-black bg-yellow-100 p-3 shadow-[2px_2px_0px_0px_#000]">
+            <div className="mb-5 rounded-lg border border-white/70 bg-white/55 p-3">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center border-2 border-black bg-pink-400 text-xs font-black shrink-0">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 shrink-0">
                   <User className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-black text-black">{user.name}</p>
-                  <p className="text-[10px] font-bold text-gray-700">
-                    NISN: {user.nisn || "-"} • {user.class || "-"}
+                  <p className="truncate text-xs font-semibold text-slate-800">{user.name}</p>
+                  <p className="text-[10px] text-slate-500">
+                    NISN: {user.nisn || "-"} / {user.class || "-"}
                   </p>
                 </div>
               </div>
               {user.school && (
-                <div className="mt-2 flex items-center gap-1 border-t border-black/20 pt-1.5 text-[10px] font-bold text-gray-700">
-                  <School className="h-3.5 w-3.5 shrink-0 text-pink-600" />
+                <div className="mt-2 flex items-center gap-1 border-t border-slate-200 pt-1.5 text-[10px] text-slate-500">
+                  <School className="h-3 w-3 shrink-0 text-indigo-400" />
                   <span className="truncate">{user.school.name}</span>
                 </div>
               )}
             </div>
           )}
 
-          {/* Navigation Links */}
-          <nav className="space-y-2.5">
+          {/* Nav Links */}
+          <nav className="space-y-1">
             {links.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
@@ -148,12 +150,9 @@ export function StudentSidebar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={cn(
-                    "flex items-center gap-3 border-2 border-black bg-white px-3.5 py-2.5 font-black transition-colors hover:bg-yellow-100 shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none",
-                    isActive && "bg-pink-300 hover:bg-pink-300"
-                  )}
+                  className={cn(navLinkBase, isActive ? navLinkActive : navLinkInactive)}
                 >
-                  <Icon className="h-5 w-5 shrink-0" />
+                  <Icon className="h-4 w-4 shrink-0" />
                   <span>{link.label}</span>
                 </Link>
               );
@@ -161,12 +160,12 @@ export function StudentSidebar() {
           </nav>
         </div>
 
-        {/* Logout Section */}
-        <div className="border-t-2 border-black pt-4">
+        {/* Logout */}
+        <div className="border-t border-slate-100 pt-4">
           <Button
-            variant="plain"
+            variant="ghost"
             onClick={logout}
-            className="flex w-full items-center justify-center gap-2"
+            className="flex w-full items-center justify-start gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
           >
             <LogOut className="h-4 w-4" />
             Keluar

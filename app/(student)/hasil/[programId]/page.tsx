@@ -5,13 +5,10 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
   ArrowLeft,
-  BookOpen,
   Briefcase,
   Building2,
   Calendar,
   Compass,
-  GraduationCap,
-  Sparkles,
 } from "lucide-react";
 import { api } from "@/lib/axios";
 import type { StudyProgram } from "@/types";
@@ -51,149 +48,121 @@ export default function ProgramDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Back button */}
-      <div>
-        <Button asChild variant="outline" className="flex items-center gap-2 text-xs sm:text-sm">
-          <Link href="/hasil">
-            <ArrowLeft className="h-4 w-4" /> Kembali ke Hasil Rekomendasi
-          </Link>
-        </Button>
-      </div>
+      <Button asChild variant="outline" className="flex items-center gap-2 text-xs sm:text-sm">
+        <Link href="/hasil">
+          <ArrowLeft className="h-4 w-4" /> Kembali ke Hasil Rekomendasi
+        </Link>
+      </Button>
 
-      {/* Header Banner */}
-      <header className="nb-card bg-yellow-300 p-6 sm:p-8 border-4 border-black shadow-[4px_4px_0px_0px_#000]">
-        <span className="nb-badge bg-white text-xs font-black text-black mb-2 inline-block">
+      <header className="nb-card p-6 sm:p-8">
+        <span className="nb-badge-pink mb-3 inline-flex">
           {program.faculty || "Kelompok Program Studi"}
         </span>
-        <h1 className="text-2xl sm:text-4xl font-black text-black uppercase tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
           {program.name}
         </h1>
-        <p className="mt-3 text-sm sm:text-base font-medium text-gray-900 leading-relaxed max-w-3xl">
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 sm:text-base">
           {program.description}
         </p>
       </header>
 
-      {/* ── REKOMENDASI PERGURUAN TINGGI (PTN & PTS) ── */}
       {program.universities && program.universities.length > 0 && (
-        <section className="nb-card bg-white p-5 sm:p-6 border-2 border-black">
-          <div className="flex items-center gap-2 border-b-2 border-black pb-3 mb-4">
+        <section className="nb-card p-5 sm:p-6">
+          <div className="mb-4 flex items-center gap-2 border-b border-slate-200/70 pb-3">
             <Building2 className="h-5 w-5 text-blue-600" />
-            <h2 className="text-lg sm:text-xl font-black uppercase text-black">
-              Rujukan Perguruan Tinggi Terkemuka (PTN / PTS)
+            <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
+              Rujukan Perguruan Tinggi Terkemuka
             </h2>
           </div>
-          <p className="text-xs sm:text-sm font-medium text-gray-700 mb-4">
-            Berikut adalah beberapa perguruan tinggi negeri dan swasta unggulan di Indonesia yang memiliki program studi <strong>{program.name}</strong> bereputasi:
+          <p className="mb-4 text-sm leading-relaxed text-slate-600">
+            Beberapa PTN dan PTS unggulan di Indonesia yang memiliki program studi{" "}
+            <strong>{program.name}</strong> bereputasi.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {program.universities.map((univ, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-2.5 border-2 border-black bg-yellow-50 p-3 shadow-[2px_2px_0px_0px_#000] hover:bg-yellow-100 transition-colors"
+                className="flex items-center gap-2.5 rounded-lg border border-white/70 bg-white/55 p-3 transition-colors hover:bg-white/80"
               >
-                <div className="flex h-7 w-7 items-center justify-center border border-black bg-black text-white font-mono text-xs font-black shrink-0">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 font-mono text-xs font-semibold text-indigo-700">
                   {idx + 1}
                 </div>
-                <span className="text-xs sm:text-sm font-black text-black">
-                  {univ}
-                </span>
+                <span className="text-sm font-medium text-slate-800">{univ}</span>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* ── JALUR BELAJAR (ROADMAP 4 TAHUN) ── */}
       <section className="space-y-3">
-        <div className="flex items-center gap-2 border-b-2 border-black pb-2">
-          <Calendar className="h-5 w-5 text-pink-600" />
-          <h2 className="text-lg sm:text-xl font-black uppercase text-black">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-indigo-600" />
+          <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
             Jalur Pembelajaran Kuliah (4 Tahun)
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {Object.entries(program.learning_path ?? {}).map(([year, text]) => (
-            <div
-              key={year}
-              className="nb-card bg-white p-4 flex flex-col justify-between hover:bg-pink-50/40 transition-colors"
-            >
-              <div>
-                <span className="inline-block border-2 border-black bg-pink-300 px-2.5 py-1 text-xs font-black text-black shadow-[2px_2px_0px_0px_#000] mb-2">
-                  {year}
-                </span>
-                <p className="text-xs sm:text-sm font-bold text-gray-800 leading-relaxed">
-                  {text}
-                </p>
-              </div>
+            <div key={year} className="nb-card p-4">
+              <span className="nb-badge-pink mb-2 inline-flex">{year}</span>
+              <p className="text-sm font-medium leading-relaxed text-slate-700">{text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── PROSPEK KARIR & PEKERJAAN ── */}
-      <section className="nb-card bg-white p-5 sm:p-6">
-        <div className="flex items-center gap-2 border-b-2 border-black pb-3 mb-4">
+      <section className="nb-card p-5 sm:p-6">
+        <div className="mb-4 flex items-center gap-2 border-b border-slate-200/70 pb-3">
           <Briefcase className="h-5 w-5 text-emerald-600" />
-          <h2 className="text-lg sm:text-xl font-black uppercase text-black">
+          <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
             Peluang Profesi & Prospek Karir
           </h2>
         </div>
         <div className="flex flex-wrap gap-2.5">
           {(program.career_paths ?? []).map((career) => (
-            <span
-              key={career}
-              className="border-2 border-black bg-pink-200 px-3.5 py-1.5 text-xs sm:text-sm font-black text-pink-950 shadow-[2px_2px_0px_0px_#000]"
-            >
+            <span key={career} className="nb-badge bg-white/65 px-3.5 py-1.5 text-sm">
               {career}
             </span>
           ))}
         </div>
       </section>
 
-      {/* ── KRITERIA PENDUKUNG KEPUTUSAN SAW ── */}
-      <section className="nb-card bg-white p-5 sm:p-6 border-2 border-black">
-        <div className="flex items-center gap-2 border-b-2 border-black pb-3 mb-4">
-          <Compass className="h-5 w-5 text-purple-600" />
-          <h2 className="text-lg sm:text-xl font-black uppercase text-black">
-            Kriteria Pembobotan SPK SAW (Kepmendikdasmen No. 102/M/2025)
+      <section className="nb-card p-5 sm:p-6">
+        <div className="mb-4 flex items-center gap-2 border-b border-slate-200/70 pb-3">
+          <Compass className="h-5 w-5 text-indigo-600" />
+          <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
+            Kriteria Pembobotan SPK SAW
           </h2>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
-          <div className="border-2 border-black bg-yellow-100 p-3 shadow-[2px_2px_0px_0px_#000]">
-            <p className="text-[10px] font-black uppercase text-gray-600">
-              Kriteria C1 (Mapel Utama)
-            </p>
-            <p className="text-sm font-black text-black mt-0.5">
-              {criteria?.primary_subject?.name || "-"}
-            </p>
-            <span className="font-mono text-xs font-bold text-gray-700">
-              Bobot: {criteria?.primary_weight} (40%)
-            </span>
-          </div>
-
-          <div className="border-2 border-black bg-blue-100 p-3 shadow-[2px_2px_0px_0px_#000]">
-            <p className="text-[10px] font-black uppercase text-gray-600">
-              Kriteria C2 (Mapel Pendukung)
-            </p>
-            <p className="text-sm font-black text-black mt-0.5">
-              {criteria?.secondary_subject?.name ?? "Tidak Ada"}
-            </p>
-            <span className="font-mono text-xs font-bold text-gray-700">
-              Bobot: {criteria?.secondary_weight ?? 0} (30%)
-            </span>
-          </div>
-
-          <div className="border-2 border-black bg-purple-100 p-3 shadow-[2px_2px_0px_0px_#000]">
-            <p className="text-[10px] font-black uppercase text-gray-600">
-              Kriteria C3 (Minat Karir RIASEC)
-            </p>
-            <p className="text-sm font-black text-black mt-0.5">
-              {criteria?.interest_category?.name || "-"}
-            </p>
-            <span className="font-mono text-xs font-bold text-gray-700">
-              Bobot: {criteria?.interest_weight} (30%)
-            </span>
-          </div>
+          {[
+            {
+              label: "C1: Mapel Utama",
+              value: criteria?.primary_subject?.name || "-",
+              weight: criteria?.primary_weight,
+              accent: "text-amber-700 bg-amber-50/80",
+            },
+            {
+              label: "C2: Mapel Pendukung",
+              value: criteria?.secondary_subject?.name ?? "Tidak Ada",
+              weight: criteria?.secondary_weight ?? 0,
+              accent: "text-blue-700 bg-blue-50/80",
+            },
+            {
+              label: "C3: Minat Karir RIASEC",
+              value: criteria?.interest_category?.name || "-",
+              weight: criteria?.interest_weight,
+              accent: "text-indigo-700 bg-indigo-50/80",
+            },
+          ].map((item) => (
+            <div key={item.label} className="rounded-lg border border-white/70 bg-white/55 p-3">
+              <p className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${item.accent}`}>
+                {item.label}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-slate-900">{item.value}</p>
+              <span className="font-mono text-xs text-slate-500">Bobot: {item.weight}</span>
+            </div>
+          ))}
         </div>
       </section>
     </div>

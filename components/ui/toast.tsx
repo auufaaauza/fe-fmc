@@ -27,14 +27,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed right-4 top-4 z-[80] space-y-3">
+      <div className="fixed right-4 top-4 z-[80] w-[calc(100%-2rem)] max-w-sm space-y-3 sm:w-auto">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={cn("nb-card w-80 p-4", toast.type === "error" ? "bg-red-100" : "bg-white")}
+            className={cn(
+              "nb-card w-full p-4 sm:w-80",
+              toast.type === "error" ? "border-red-200 bg-red-50/80" : "bg-white/70"
+            )}
           >
-            <div className="font-black">{toast.title}</div>
-            {toast.description ? <div className="mt-1 text-sm font-bold">{toast.description}</div> : null}
+            <div className="font-semibold text-slate-900">{toast.title}</div>
+            {toast.description ? <div className="mt-1 text-sm text-slate-600">{toast.description}</div> : null}
           </div>
         ))}
       </div>

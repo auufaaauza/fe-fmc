@@ -19,7 +19,9 @@ const config: Config = {
     "nb-badge-pink",
     "nb-header",
     "nb-sidebar",
-    "nb-table"
+    "nb-table",
+    "glass-btn",
+    "glass-btn-dark",
   ],
   theme: {
     extend: {

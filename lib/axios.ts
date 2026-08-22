@@ -38,7 +38,14 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.message ?? "Terjadi kesalahan pada server.";
+    let message = error.response?.data?.message ?? "Terjadi kesalahan pada server.";
+    if (error.response?.data?.errors) {
+      const firstErrorKey = Object.keys(error.response.data.errors)[0];
+      const errorArray = error.response.data.errors[firstErrorKey];
+      if (Array.isArray(errorArray) && errorArray.length > 0) {
+        message = errorArray[0];
+      }
+    }
     error.appMessage = message;
     return Promise.reject(error);
   }

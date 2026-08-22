@@ -21,7 +21,7 @@ interface AuthContextValue {
   user: User | null;
   progress: Progress | null;
   loading: boolean;
-  login: (role: Role, identifier: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string, role?: Role) => Promise<void>;
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
   registerStudent: (data: RegisterStudentData) => Promise<string>;
@@ -62,19 +62,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshMe]);
 
   const login = useCallback(
-    async (role: Role, identifier: string, password: string) => {
-      const response = await api.post("/login", { role, identifier, password });
-      // Save token to localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem(TOKEN_KEY, response.data.token);
-      }
-      setUser(response.data.user);
-      setProgress(response.data.progress);
+    async (identifier: string, password: string, role?: Role) => {
+      const trimmed = identifier.trim();
+      const determinedRole: Role = role || (trimmed.includes("@") ? "admin" : "student");
 
-      if (role === "admin") {
-        router.push("/admin/dashboard");
-      } else {
-        router.push("/dashboard");
+      const payload = {
+        role: determinedRole,
+        identifier: trimmed,
+        password,
+      };
+
+      try {
+        const response = await api.post("/login", payload);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(TOKEN_KEY, response.data.token);
+        }
+        const loggedUser = response.data.user;
+        setUser(loggedUser);
+        setProgress(response.data.progress);
+
+        if (loggedUser.role === "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/dashboard");
+        }
+      } catch (error: any) {
+        // If initial attempt with admin role failed and user entered an email,
+        // retry as student in case the student account was registered with email
+        if (determinedRole === "admin" && !role) {
+          try {
+            const retryResponse = await api.post("/login", {
+              role: "student",
+              identifier: trimmed,
+              password,
+            });
+            if (typeof window !== "undefined") {
+              localStorage.setItem(TOKEN_KEY, retryResponse.data.token);
+            }
+            const loggedUser = retryResponse.data.user;
+            setUser(loggedUser);
+            setProgress(retryResponse.data.progress);
+            router.push("/dashboard");
+            return;
+          } catch {
+            // Keep original error if retry also fails
+          }
+        }
+        throw error;
       }
     },
     [router]

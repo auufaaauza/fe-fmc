@@ -1,89 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --nb-yellow: #FFD600;
-  --nb-pink: #FF6B9D;
-  --nb-black: #000000;
-  --nb-white: #FFFFFF;
-  --nb-bg: #FFFBF0;
-  --background: 48 100% 97%;
-  --foreground: 0 0% 0%;
-  --border: 0 0% 0%;
+  --color-bg: #F6F8FB;
+  --color-surface: rgba(255, 255, 255, 0.72);
+  --color-border: rgba(148, 163, 184, 0.24);
+  --color-border-md: rgba(100, 116, 139, 0.32);
+  --color-text: #172033;
+  --color-text-sm: #5B667A;
+  --color-text-xs: #8A95A8;
+  --color-accent: #4F46E5;
+  --color-accent-lt: rgba(238, 242, 255, 0.78);
+  --color-accent-md: rgba(165, 180, 252, 0.54);
+  --glass-bg: rgba(255, 255, 255, 0.66);
+  --glass-bg-strong: rgba(255, 255, 255, 0.84);
+  --glass-border: rgba(255, 255, 255, 0.78);
+  --glass-shadow: 0 18px 50px rgba(31, 41, 55, 0.08);
+  --glass-shadow-soft: 0 8px 28px rgba(31, 41, 55, 0.06);
+
+  --background: 213 33% 97%;
+  --foreground: 222 47% 11%;
+  --border: 215 25% 89%;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
 body {
-  background: var(--nb-bg);
-  color: var(--nb-black);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(79, 70, 229, 0.13), transparent 30rem),
+    radial-gradient(circle at 88% 18%, rgba(14, 165, 233, 0.10), transparent 28rem),
+    linear-gradient(135deg, #F9FBFF 0%, #F2F6FB 45%, #F7FAFC 100%);
+  color: var(--color-text);
+  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black, transparent 76%);
+}
+
+::selection {
+  background: rgba(79, 70, 229, 0.18);
 }
 
 @layer components {
   .nb-card {
-    @apply bg-white border-2 border-black rounded-none;
-    box-shadow: 4px 4px 0px 0px #000000;
+    @apply rounded-xl border border-white/70;
+    background: var(--glass-bg);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: var(--glass-shadow-soft), inset 0 1px 0 rgba(255,255,255,0.82);
   }
 
   .nb-card-yellow {
-    @apply bg-yellow-300 border-2 border-black rounded-none;
-    box-shadow: 4px 4px 0px 0px #000000;
+    @apply rounded-xl border border-indigo-100;
+    background: linear-gradient(135deg, rgba(238, 242, 255, 0.84), rgba(255, 255, 255, 0.68));
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: var(--glass-shadow-soft), inset 0 1px 0 rgba(255,255,255,0.82);
   }
 
   .nb-btn-primary {
-    @apply bg-yellow-400 text-black font-black border-2 border-black rounded-none px-4 py-2 uppercase tracking-wide;
-    box-shadow: 3px 3px 0px 0px #000000;
-    transition: all 0.08s ease;
-  }
-
-  .nb-btn-primary:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0px 0px #000000;
-  }
-
-  .nb-btn-primary:active {
-    transform: translate(3px, 3px);
-    box-shadow: none;
+    @apply rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm
+           transition-all duration-150 hover:bg-indigo-700 hover:shadow-md active:scale-[0.98];
   }
 
   .nb-btn-danger {
-    @apply bg-red-400 text-black font-black border-2 border-black rounded-none px-4 py-2 uppercase;
-    box-shadow: 3px 3px 0px 0px #000000;
+    @apply rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white shadow-sm
+           transition-all duration-150 hover:bg-red-600 hover:shadow-md active:scale-[0.98];
   }
 
   .nb-input {
-    @apply border-2 border-black rounded-none bg-white focus:outline-none focus:ring-0 focus:border-black px-3 py-2 w-full;
-    box-shadow: 2px 2px 0px 0px #000000;
+    @apply w-full rounded-lg border border-white/70 px-3 py-2 text-sm text-slate-900
+           placeholder:text-slate-400 transition-all duration-150
+           focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/25;
+    background: rgba(255, 255, 255, 0.68);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.74);
   }
 
   .nb-badge {
-    @apply bg-yellow-400 border-2 border-black font-bold text-black rounded-none px-2 py-0.5 text-xs uppercase;
+    @apply inline-flex items-center rounded-full border border-white/70 px-2.5 py-0.5 text-xs font-medium text-slate-700;
+    background: rgba(255, 255, 255, 0.58);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
   .nb-badge-pink {
-    @apply bg-pink-400 border-2 border-black font-bold text-black rounded-none px-2 py-0.5 text-xs uppercase;
+    @apply inline-flex items-center rounded-full border border-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700;
+    background: rgba(238, 242, 255, 0.68);
+  }
+
+  .glass-btn {
+    @apply inline-flex cursor-pointer items-center justify-center rounded-lg px-4 py-2 text-sm font-medium
+           transition-all duration-150 active:scale-[0.98];
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow-soft), inset 0 1px 0 rgba(255,255,255,0.86);
+    color: #334155;
+  }
+
+  .glass-btn:hover {
+    background: var(--glass-bg-strong);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,0.94);
+  }
+
+  .glass-btn-dark {
+    background: rgba(30, 41, 59, 0.72);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    color: #F8FAFC;
   }
 
   .nb-header {
-    @apply bg-yellow-400 border-b-4 border-black;
+    @apply border-b border-white/70;
+    background: rgba(255, 255, 255, 0.68);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
   }
 
   .nb-sidebar {
-    @apply bg-white border-r-4 border-black;
+    @apply border-r border-white/70;
+    background: rgba(255, 255, 255, 0.68);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    box-shadow: 10px 0 34px rgba(31, 41, 55, 0.05);
   }
 
   .nb-table th {
-    @apply bg-yellow-400 border-2 border-black font-black text-left px-4 py-2 uppercase;
+    @apply border-b border-slate-200/70 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500;
+    background: rgba(248, 250, 252, 0.72);
   }
 
   .nb-table td {
-    @apply border-2 border-black px-4 py-2;
+    @apply border-b border-slate-100/80 px-4 py-3 text-sm text-slate-700;
   }
 
-  .nb-table tr:nth-child(even) {
-    @apply bg-yellow-50;
+  .nb-table tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .nb-table tr:hover td {
+    @apply bg-white/45;
+  }
+}
+
+/* Compatibility pass for the unfinished neo-brutalist classes. */
+.border-black,
+.border-black\/30,
+.border-black\/40 {
+  border-color: rgba(148, 163, 184, 0.28) !important;
+}
+
+.border-2,
+.border-4 {
+  border-width: 1px !important;
+}
+
+.font-black {
+  font-weight: 600 !important;
+}
+
+.shadow-\[2px_2px_0px_0px_\#000\],
+.shadow-\[4px_4px_0px_0px_\#000\],
+.shadow-\[0px_2px_0px_0px_\#000\] {
+  box-shadow: var(--glass-shadow-soft) !important;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+@media print {
+  .nb-sidebar,
+  .nb-header {
+    display: none !important;
   }
 }

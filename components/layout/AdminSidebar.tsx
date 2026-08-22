@@ -26,42 +26,44 @@ export function AdminSidebar() {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Check if current route is inside student/class management
   const isStudentSectionActive =
     pathname.startsWith("/admin/siswa") || pathname.startsWith("/admin/kelas");
 
   const [studentDropdownOpen, setStudentDropdownOpen] = useState(true);
 
-  // Auto-expand dropdown when navigating into one of its subpages
   useEffect(() => {
     if (isStudentSectionActive) {
       setStudentDropdownOpen(true);
     }
   }, [pathname, isStudentSectionActive]);
 
-  // Close mobile drawer on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
+  const navLinkBase =
+    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150";
+  const navLinkActive = "bg-indigo-50 text-indigo-700";
+  const navLinkInactive = "text-slate-600 hover:bg-slate-100 hover:text-slate-900";
+
   return (
     <>
-      {/* ── Mobile Top Header (Visible only on < md) ── */}
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b-4 border-black bg-yellow-400 px-4 py-2.5 md:hidden shadow-[0px_2px_0px_0px_#000]">
+      {/* ── Mobile Top Header ── */}
+      <header className="nb-header sticky top-0 z-30 flex items-center justify-between px-4 py-3 shadow-sm md:hidden">
         <div className="flex items-center gap-2.5">
           <Image
             src="/image/logo.png"
             alt="Find My Career"
             width={120}
             height={120}
-            className="h-10 w-auto object-contain"
+            className="h-8 w-auto object-contain"
             priority
           />
           <div className="flex flex-col">
-            <span className="text-sm font-black tracking-tight text-black leading-none">
-              FIND MY CAREER
+            <span className="text-sm font-semibold text-slate-800 leading-none">
+              Find My Career
             </span>
-            <span className="text-[9px] font-bold text-gray-800">
+            <span className="text-[10px] text-slate-500 mt-0.5">
               Portal Guru BK
             </span>
           </div>
@@ -70,136 +72,131 @@ export function AdminSidebar() {
         <button
           type="button"
           onClick={() => setMobileOpen((prev) => !prev)}
-          className="border-2 border-black bg-white p-1.5 shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+          className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/70"
           aria-label="Toggle menu"
         >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </header>
 
-      {/* ── Mobile Drawer Overlay ── */}
+      {/* ── Mobile Overlay ── */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/20 backdrop-blur-sm md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* ── Sidebar (Desktop Fixed & Mobile Slide Drawer) ── */}
+      {/* ── Sidebar ── */}
       <aside
         className={cn(
-          "nb-sidebar fixed inset-y-0 left-0 z-50 flex w-72 flex-col justify-between bg-white p-5 transition-transform duration-200 ease-in-out md:static md:w-64 md:translate-x-0 md:min-h-screen",
+          "nb-sidebar fixed inset-y-0 left-0 z-50 flex w-72 flex-col justify-between p-5 transition-transform duration-200 ease-in-out md:static md:w-64 md:translate-x-0 md:min-h-screen",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div>
-          {/* Brand Logo Header */}
-          <div className="mb-5 border-b-2 border-black pb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 w-full">
-                <Image
-                  src="/image/logo.png"
-                  alt="Find My Career"
-                  width={140}
-                  height={140}
-                  className="h-14 w-14 shrink-0 object-contain"
-                  priority
-                />
-                <div className="flex flex-col">
-                  <span className="text-base font-black tracking-tight text-black leading-tight uppercase">
-                    Find My <span className="text-pink-600">Career</span>
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mt-0.5">
-                    Portal Guru BK
-                  </span>
-                </div>
+          {/* Brand */}
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Image
+                src="/image/logo.png"
+                alt="Find My Career"
+                width={140}
+                height={140}
+                className="h-10 w-10 shrink-0 object-contain"
+                priority
+              />
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-slate-800 leading-tight">
+                  Find My Career
+                </span>
+                <span className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wide">
+                  Portal Guru BK
+                </span>
               </div>
-              <button
-                type="button"
-                onClick={() => setMobileOpen(false)}
-                className="border-2 border-black bg-white p-1 md:hidden shrink-0"
-              >
-                <X className="h-5 w-5" />
-              </button>
             </div>
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors md:hidden"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
 
-          {/* School Info Badge */}
+          {/* School Info */}
           {user?.school && (
-            <div className="mb-5 border-2 border-black bg-yellow-100 p-2.5 shadow-[2px_2px_0px_0px_#000]">
-              <div className="flex items-center gap-1.5 text-xs font-black text-black">
-                <SchoolIcon className="h-4 w-4 shrink-0 text-pink-600" />
+            <div className="mb-5 rounded-lg border border-white/70 bg-white/55 p-3">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+                <SchoolIcon className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
                 <span className="truncate">{user.school.name}</span>
               </div>
               {user.school.city && (
-                <p className="mt-1 flex items-center text-[10px] font-bold text-gray-700">
-                  <MapPin className="h-3 w-3 shrink-0 text-pink-600 mr-1" />
+                <p className="mt-1 flex items-center text-[10px] text-slate-500 gap-1">
+                  <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
                   <span>{user.school.city}</span>
                 </p>
               )}
             </div>
           )}
 
-          <nav className="space-y-2.5">
+          <nav className="space-y-1">
             {/* Dashboard */}
             <Link
               href="/admin/dashboard"
               className={cn(
-                "flex items-center gap-3 border-2 border-black bg-white px-3 py-2.5 font-black transition-colors hover:bg-yellow-100 shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none",
-                pathname === "/admin/dashboard" && "bg-pink-300 hover:bg-pink-300"
+                navLinkBase,
+                pathname === "/admin/dashboard" ? navLinkActive : navLinkInactive
               )}
             >
-              <BarChart3 className="h-5 w-5 shrink-0" />
+              <BarChart3 className="h-4 w-4 shrink-0" />
               Dashboard
             </Link>
 
-            {/* Collapsible Dropdown: Siswa & Kelas */}
-            <div className="border-2 border-black bg-white shadow-[2px_2px_0px_0px_#000]">
+            {/* Kelola Siswa Dropdown */}
+            <div className="rounded-lg overflow-hidden">
               <button
                 type="button"
                 onClick={() => setStudentDropdownOpen((prev) => !prev)}
                 className={cn(
-                  "flex w-full items-center justify-between px-3 py-2.5 font-black transition-colors hover:bg-yellow-100",
-                  isStudentSectionActive && !studentDropdownOpen && "bg-yellow-200"
+                  navLinkBase,
+                  "w-full justify-between",
+                  isStudentSectionActive && !studentDropdownOpen ? navLinkActive : navLinkInactive
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <Users className="h-5 w-5 shrink-0 text-black" />
+                  <Users className="h-4 w-4 shrink-0" />
                   <span>Kelola Siswa</span>
                 </div>
                 <ChevronDown
                   className={cn(
-                    "h-4 w-4 transition-transform duration-200",
+                    "h-3.5 w-3.5 transition-transform duration-200",
                     studentDropdownOpen && "rotate-180"
                   )}
                 />
               </button>
 
-              {/* Submenu Links */}
               {studentDropdownOpen && (
-                <div className="space-y-1 border-t-2 border-black bg-yellow-50/70 p-2">
+                <div className="ml-3 mt-1 space-y-0.5 pl-4 border-l border-slate-200">
                   <Link
                     href="/admin/siswa"
                     className={cn(
-                      "flex items-center gap-2 border-2 border-transparent px-2.5 py-1.5 text-xs font-black transition-colors hover:border-black hover:bg-white",
-                      pathname === "/admin/siswa" &&
-                        "border-black bg-pink-300 hover:bg-pink-300"
+                      navLinkBase, "text-xs",
+                      pathname === "/admin/siswa" ? navLinkActive : navLinkInactive
                     )}
                   >
-                    <UserCheck className="h-4 w-4 shrink-0 text-gray-700" />
-                    <span>Daftar Siswa</span>
+                    <UserCheck className="h-3.5 w-3.5 shrink-0" />
+                    Daftar Siswa
                   </Link>
-
                   <Link
                     href="/admin/kelas"
                     className={cn(
-                      "flex items-center gap-2 border-2 border-transparent px-2.5 py-1.5 text-xs font-black transition-colors hover:border-black hover:bg-white",
-                      pathname === "/admin/kelas" &&
-                        "border-black bg-pink-300 hover:bg-pink-300"
+                      navLinkBase, "text-xs",
+                      pathname === "/admin/kelas" ? navLinkActive : navLinkInactive
                     )}
                   >
-                    <Layers className="h-4 w-4 shrink-0 text-gray-700" />
-                    <span>Kelola Kelas</span>
+                    <Layers className="h-3.5 w-3.5 shrink-0" />
+                    Kelola Kelas
                   </Link>
                 </div>
               )}
@@ -209,26 +206,26 @@ export function AdminSidebar() {
             <Link
               href="/admin/program-studi"
               className={cn(
-                "flex items-center gap-3 border-2 border-black bg-white px-3 py-2.5 font-black transition-colors hover:bg-yellow-100 shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none",
-                pathname === "/admin/program-studi" &&
-                  "bg-pink-300 hover:bg-pink-300"
+                navLinkBase,
+                pathname === "/admin/program-studi" ? navLinkActive : navLinkInactive
               )}
             >
-              <GraduationCap className="h-5 w-5 shrink-0" />
+              <GraduationCap className="h-4 w-4 shrink-0" />
               Program Studi
             </Link>
           </nav>
         </div>
 
-        <div className="space-y-3 border-t-2 border-black pt-4">
-          <div className="text-xs">
-            <p className="font-black text-black">{user?.name}</p>
-            <p className="truncate text-gray-600">{user?.email}</p>
+        {/* User Footer */}
+        <div className="space-y-3 border-t border-slate-100 pt-4">
+          <div className="text-xs px-1">
+            <p className="font-semibold text-slate-800">{user?.name}</p>
+            <p className="truncate text-slate-500 mt-0.5">{user?.email}</p>
           </div>
           <Button
-            variant="plain"
+            variant="ghost"
             onClick={logout}
-            className="flex w-full items-center justify-center gap-2"
+            className="flex w-full items-center justify-start gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
           >
             <LogOut className="h-4 w-4" />
             Keluar

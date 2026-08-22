@@ -10,7 +10,12 @@ interface PrintableReportProps {
 }
 
 export function PrintableReport({ student, recommendation }: PrintableReportProps) {
-  if (!recommendation || !recommendation.results || recommendation.results.length === 0) {
+  const isValidated = Boolean(
+    recommendation?.is_validated ||
+    (recommendation?.counselor_reviewed_at && recommendation?.counselor_notes)
+  );
+
+  if (!recommendation || !isValidated || !recommendation.results || recommendation.results.length === 0) {
     return null;
   }
 
@@ -25,7 +30,8 @@ export function PrintableReport({ student, recommendation }: PrintableReportProp
       {/* Tombol Cetak (Hanya tampil di layar) */}
       <Button
         onClick={handlePrint}
-        className="flex items-center gap-2 bg-yellow-400 text-black border-2 border-black hover:bg-yellow-500 shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-xs sm:text-sm font-black print:hidden"
+        variant="glass"
+        className="flex items-center gap-2 text-xs sm:text-sm print:hidden"
       >
         <Printer className="h-4 w-4" />
         <span>Cetak Laporan PDF Resmi</span>
@@ -45,10 +51,10 @@ export function PrintableReport({ student, recommendation }: PrintableReportProp
             SMA Negeri 18 Garut
           </h2>
           <p className="text-[11px] text-gray-700 mt-1">
-            NPSN: 20209182 • Jl. Perum Bumi Abdi Negara 1 Karangpawitan, Kab. Garut, Prov. Jawa Barat
+            NPSN: 20209182 / Jl. Perum Bumi Abdi Negara 1 Karangpawitan, Kab. Garut, Prov. Jawa Barat
           </p>
           <p className="text-[10px] text-gray-600">
-            Laman: sman18garut.sch.id • Surat Elektronik: sman18garut@gmail.com
+            Laman: sman18garut.sch.id / Surat Elektronik: sman18garut@gmail.com
           </p>
         </div>
 
@@ -157,7 +163,7 @@ export function PrintableReport({ student, recommendation }: PrintableReportProp
           </p>
           {recommendation.counselor && (
             <p className="text-[10px] text-gray-600 font-bold mt-1 text-right">
-              — Ditinjau oleh: {recommendation.counselor.name}
+              - Ditinjau oleh: {recommendation.counselor.name}
             </p>
           )}
         </div>

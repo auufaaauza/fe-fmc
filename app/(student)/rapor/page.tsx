@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { ChevronRight, Info, MoveHorizontal, Save } from "lucide-react";
+import { CheckCircle2, Info, MoveHorizontal, Save } from "lucide-react";
 import { api } from "@/lib/axios";
 import type { StudentScore, Subject } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -158,86 +158,90 @@ export default function RaporPage() {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 max-w-5xl mx-auto px-1 sm:px-0">
-      {/* ── KOP & PETUNJUK FORMAT ASLI ANGKET GURU BK ── */}
-      <div className="border-4 border-black bg-white p-4 sm:p-6 shadow-[4px_4px_0px_0px_#000]">
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pb-4 border-b-2 border-black">
+    <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 max-w-5xl mx-auto pb-16">
+      {/* ── KOP & PETUNJUK FORMAT ANGKET BK ── */}
+      <div className="nb-card p-4 sm:p-6 bg-white border border-slate-200 shadow-sm rounded-xl">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pb-4 border-b border-slate-100">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight text-black leading-tight">
-              NILAI MATA PELAJARAN
+            <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 mb-1.5">
+              Lampiran Angket Nilai Siswa
+            </span>
+            <h1 className="text-xl sm:text-2xl font-semibold text-slate-900">
+              Input Nilai Rapor Semester 1–5
             </h1>
-            <p className="text-[11px] sm:text-xs font-bold text-gray-500 mt-1 uppercase tracking-wider">
+            <p className="text-xs text-slate-500 mt-1">
               SMAN 18 Garut • Kurikulum Merdeka
             </p>
           </div>
 
-          <div className="flex flex-col items-start md:items-end gap-1.5 w-full md:w-auto">
-            <span className="text-xs sm:text-sm font-black italic text-gray-700">Lampiran</span>
-            <div className="border-2 border-black p-2.5 sm:p-3 bg-yellow-50 w-full md:min-w-64 text-xs font-bold space-y-1">
-              <div className="flex items-center justify-between gap-2 border-b border-black/30 pb-1">
-                <span className="text-gray-600">Nama:</span>
-                <strong className="text-black font-black font-mono truncate max-w-[180px] sm:max-w-[220px]">
+          <div className="flex flex-col items-start md:items-end gap-1 w-full md:w-auto">
+            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 w-full md:min-w-60 text-xs space-y-1">
+              <div className="flex items-center justify-between gap-2 border-b border-slate-200/80 pb-1">
+                <span className="text-slate-500">Nama:</span>
+                <strong className="text-slate-900 font-mono truncate max-w-[180px]">
                   {user?.name || "-"}
                 </strong>
               </div>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-gray-600">Kls:</span>
-                <strong className="text-black font-black font-mono">{user?.class || "-"}</strong>
+                <span className="text-slate-500">Kelas:</span>
+                <strong className="text-slate-900 font-mono">{user?.class || "-"}</strong>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Petunjuk */}
-        <div className="pt-3 sm:pt-4 text-xs sm:text-sm text-gray-900">
-          <p className="font-black text-black mb-1">Petunjuk:</p>
-          <ol className="list-decimal list-inside space-y-1 font-medium">
-            <li>Pindahkan angka nilai rapor untuk semua mata pelajaran pada tabel dibawah ini,</li>
-            <li>
-              Jumlahkan nilai semester 1 s.d 5 semua mata pelajaran, lalu dirata-ratakan (
-              <span className="text-pink-700 font-black">dihitung otomatis secara instan oleh sistem</span>
-              ).
-            </li>
-            <li>Mata pelajaran peminatan yang tidak diambil pada jurusan Anda boleh dikosongkan.</li>
+        <div className="pt-3.5 text-xs text-slate-600">
+          <p className="font-semibold text-slate-800 mb-1">Petunjuk Pengisian:</p>
+          <ol className="list-decimal list-inside space-y-1 text-slate-500">
+            <li>Isi angka nilai rapor untuk semua mata pelajaran dari semester 1 s.d 5 (skala 0–100).</li>
+            <li>Jumlah dan Rerata tiap mata pelajaran akan dihitung secara otomatis oleh sistem.</li>
+            <li>Mata pelajaran peminatan yang tidak Anda ambil boleh dikosongkan.</li>
           </ol>
         </div>
       </div>
 
-      {/* ── TABEL UTAMA (No. 1 s/d 19) ── */}
-      <div className="border-4 border-black bg-white shadow-[4px_4px_0px_0px_#000] overflow-hidden">
-        {/* Mobile Swipe Hint */}
-        <div className="flex items-center justify-between gap-2 px-3 py-1.5 bg-yellow-300 border-b-2 border-black text-[11px] font-black text-black md:hidden">
-          <span className="flex items-center gap-1">
-            <MoveHorizontal className="h-3.5 w-3.5 shrink-0" /> Geser tabel ke samping untuk melihat semua semester
-          </span>
+      {/* ── TABEL UTAMA (Mata Pelajaran Umum 1 s/d 19) ── */}
+      <div className="nb-card bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 bg-slate-50/80 border-b border-slate-200">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-slate-800">
+              Mata Pelajaran Umum & Wajib
+            </h3>
+            <span className="text-xs text-slate-500">
+              ({table1Subjects.length} Mata Pelajaran)
+            </span>
+          </div>
+          <div className="flex items-center gap-1 text-[11px] text-slate-400 md:hidden">
+            <MoveHorizontal className="h-3.5 w-3.5" /> Geser tabel
+          </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-xs sm:text-sm border-collapse min-w-[580px] sm:min-w-[640px]">
+          <table className="w-full text-xs sm:text-sm border-collapse min-w-[620px]">
             <thead>
-              <tr className="border-b-2 border-black bg-gray-100 text-black">
-                <th rowSpan={2} className="border-r-2 border-black p-2 text-center w-10 sm:w-12 font-black">
+              <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-600">
+                <th rowSpan={2} className="border-r border-slate-200 p-2.5 text-center w-10 sm:w-12 font-semibold text-xs">
                   No
                 </th>
-                <th rowSpan={2} className="border-r-2 border-black p-2 text-left min-w-[140px] sm:min-w-[180px] font-black">
-                  Mata pelajaran
+                <th rowSpan={2} className="border-r border-slate-200 p-2.5 text-left min-w-[160px] sm:min-w-[200px] font-semibold text-xs">
+                  Mata Pelajaran
                 </th>
-                <th colSpan={5} className="border-r-2 border-black p-1 text-center font-black bg-blue-50">
+                <th colSpan={5} className="border-r border-slate-200 p-1.5 text-center font-semibold text-xs bg-indigo-50/40 text-indigo-900">
                   Nilai Semester
                 </th>
-                <th rowSpan={2} className="border-r-2 border-black p-2 text-center w-16 sm:w-20 font-black bg-yellow-100">
-                  Σ
+                <th rowSpan={2} className="border-r border-slate-200 p-2 text-center w-16 sm:w-20 font-semibold text-xs bg-amber-50/50 text-amber-900">
+                  Jumlah
                 </th>
-                <th rowSpan={2} className="p-2 text-center w-20 sm:w-24 font-black bg-green-100">
-                  Re-rata
+                <th rowSpan={2} className="p-2 text-center w-20 sm:w-24 font-semibold text-xs bg-emerald-50/50 text-emerald-900">
+                  Rerata
                 </th>
               </tr>
-              <tr className="border-b-2 border-black bg-gray-50 text-[11px] text-gray-800 font-bold">
-                <th className="border-r border-black p-1 text-center w-12 sm:w-14 font-black">I</th>
-                <th className="border-r border-black p-1 text-center w-12 sm:w-14 font-black">II</th>
-                <th className="border-r border-black p-1 text-center w-12 sm:w-14 font-black">III</th>
-                <th className="border-r border-black p-1 text-center w-12 sm:w-14 font-black">IV</th>
-                <th className="border-r-2 border-black p-1 text-center w-12 sm:w-14 font-black">V</th>
+              <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] text-slate-500">
+                <th className="border-r border-slate-200 p-1 text-center w-12 sm:w-14 font-medium">I</th>
+                <th className="border-r border-slate-200 p-1 text-center w-12 sm:w-14 font-medium">II</th>
+                <th className="border-r border-slate-200 p-1 text-center w-12 sm:w-14 font-medium">III</th>
+                <th className="border-r border-slate-200 p-1 text-center w-12 sm:w-14 font-medium">IV</th>
+                <th className="border-r border-slate-200 p-1 text-center w-12 sm:w-14 font-medium">V</th>
               </tr>
             </thead>
             <tbody>
@@ -249,95 +253,95 @@ export default function RaporPage() {
                 return (
                   <tr
                     key={sub.id}
-                    className={`border-b border-black/30 transition-colors ${
-                      stats.hasValue ? "bg-green-50/30" : "hover:bg-yellow-50/50"
+                    className={`border-b border-slate-100 transition-colors ${
+                      stats.hasValue ? "bg-indigo-50/15 hover:bg-indigo-50/30" : "hover:bg-slate-50/60"
                     }`}
                   >
-                    <td className="border-r-2 border-black p-1.5 sm:p-2 text-center font-bold text-xs">
+                    <td className="border-r border-slate-200 p-2 text-center text-slate-500 font-mono text-xs">
                       {rowNo}
                     </td>
-                    <td className="border-r-2 border-black p-1.5 sm:p-2 font-bold text-black text-xs sm:text-sm">
+                    <td className="border-r border-slate-200 p-2 font-medium text-slate-800 text-xs sm:text-sm">
                       {sub.name}
                     </td>
 
                     {/* I */}
-                    <td className="border-r border-black p-0.5">
+                    <td className="border-r border-slate-200 p-1">
                       <input
                         type="number"
                         min={0}
                         max={100}
                         step="any"
-                        placeholder=""
+                        placeholder="-"
                         value={item.sem1}
                         onChange={(e) => handleSemesterChange(sub.id, "sem1", e.target.value)}
-                        className="w-full text-center font-mono font-bold text-xs sm:text-sm p-1 sm:p-1.5 border border-black/40 bg-white focus:bg-yellow-100 focus:outline-none focus:ring-1 focus:ring-black"
+                        className="w-full text-center font-mono font-medium text-xs sm:text-sm py-1.5 px-1 rounded-md border border-slate-200 bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:bg-indigo-50/20 focus:outline-none transition-all placeholder:text-slate-300"
                       />
                     </td>
 
                     {/* II */}
-                    <td className="border-r border-black p-0.5">
+                    <td className="border-r border-slate-200 p-1">
                       <input
                         type="number"
                         min={0}
                         max={100}
                         step="any"
-                        placeholder=""
+                        placeholder="-"
                         value={item.sem2}
                         onChange={(e) => handleSemesterChange(sub.id, "sem2", e.target.value)}
-                        className="w-full text-center font-mono font-bold text-xs sm:text-sm p-1 sm:p-1.5 border border-black/40 bg-white focus:bg-yellow-100 focus:outline-none focus:ring-1 focus:ring-black"
+                        className="w-full text-center font-mono font-medium text-xs sm:text-sm py-1.5 px-1 rounded-md border border-slate-200 bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:bg-indigo-50/20 focus:outline-none transition-all placeholder:text-slate-300"
                       />
                     </td>
 
                     {/* III */}
-                    <td className="border-r border-black p-0.5">
+                    <td className="border-r border-slate-200 p-1">
                       <input
                         type="number"
                         min={0}
                         max={100}
                         step="any"
-                        placeholder=""
+                        placeholder="-"
                         value={item.sem3}
                         onChange={(e) => handleSemesterChange(sub.id, "sem3", e.target.value)}
-                        className="w-full text-center font-mono font-bold text-xs sm:text-sm p-1 sm:p-1.5 border border-black/40 bg-white focus:bg-yellow-100 focus:outline-none focus:ring-1 focus:ring-black"
+                        className="w-full text-center font-mono font-medium text-xs sm:text-sm py-1.5 px-1 rounded-md border border-slate-200 bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:bg-indigo-50/20 focus:outline-none transition-all placeholder:text-slate-300"
                       />
                     </td>
 
                     {/* IV */}
-                    <td className="border-r border-black p-0.5">
+                    <td className="border-r border-slate-200 p-1">
                       <input
                         type="number"
                         min={0}
                         max={100}
                         step="any"
-                        placeholder=""
+                        placeholder="-"
                         value={item.sem4}
                         onChange={(e) => handleSemesterChange(sub.id, "sem4", e.target.value)}
-                        className="w-full text-center font-mono font-bold text-xs sm:text-sm p-1 sm:p-1.5 border border-black/40 bg-white focus:bg-yellow-100 focus:outline-none focus:ring-1 focus:ring-black"
+                        className="w-full text-center font-mono font-medium text-xs sm:text-sm py-1.5 px-1 rounded-md border border-slate-200 bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:bg-indigo-50/20 focus:outline-none transition-all placeholder:text-slate-300"
                       />
                     </td>
 
                     {/* V */}
-                    <td className="border-r-2 border-black p-0.5">
+                    <td className="border-r border-slate-200 p-1">
                       <input
                         type="number"
                         min={0}
                         max={100}
                         step="any"
-                        placeholder=""
+                        placeholder="-"
                         value={item.sem5}
                         onChange={(e) => handleSemesterChange(sub.id, "sem5", e.target.value)}
-                        className="w-full text-center font-mono font-bold text-xs sm:text-sm p-1 sm:p-1.5 border border-black/40 bg-white focus:bg-yellow-100 focus:outline-none focus:ring-1 focus:ring-black"
+                        className="w-full text-center font-mono font-medium text-xs sm:text-sm py-1.5 px-1 rounded-md border border-slate-200 bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:bg-indigo-50/20 focus:outline-none transition-all placeholder:text-slate-300"
                       />
                     </td>
 
-                    {/* Σ (Jumlah) */}
-                    <td className="border-r-2 border-black p-1.5 sm:p-2 text-center font-mono font-bold text-xs bg-yellow-50/60">
-                      {stats.hasValue ? stats.sum.toFixed(0) : ""}
+                    {/* Jumlah */}
+                    <td className="border-r border-slate-200 p-1.5 sm:p-2 text-center font-mono font-semibold text-xs text-amber-900 bg-amber-50/40">
+                      {stats.hasValue ? stats.sum.toFixed(0) : <span className="text-slate-300">-</span>}
                     </td>
 
                     {/* Re-rata */}
-                    <td className="p-1.5 sm:p-2 text-center font-mono font-black text-xs sm:text-sm bg-green-50/60 text-green-950">
-                      {stats.hasValue ? stats.avg.toFixed(1) : ""}
+                    <td className="p-1.5 sm:p-2 text-center font-mono font-bold text-xs sm:text-sm text-emerald-700 bg-emerald-50/40">
+                      {stats.hasValue ? stats.avg.toFixed(1) : <span className="text-slate-300">-</span>}
                     </td>
                   </tr>
                 );
@@ -347,35 +351,49 @@ export default function RaporPage() {
         </div>
       </div>
 
-      {/* ── TABEL BAWAH (IPA & IPS) ── */}
+      {/* ── TABEL PILIHAN / PEMINATAN (IPA & IPS No. 20 s/d 30+) ── */}
       {table2Subjects.length > 0 && (
-        <div className="border-4 border-black bg-white shadow-[4px_4px_0px_0px_#000] overflow-hidden">
+        <div className="nb-card bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-slate-50/80 border-b border-slate-200">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-slate-800">
+                Mata Pelajaran Pilihan & Pendukung Rumpun (IPA / IPS / Bahasa)
+              </h3>
+              <span className="text-xs text-slate-500">
+                ({table2Subjects.length} Mata Pelajaran)
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] text-slate-400 md:hidden">
+              <MoveHorizontal className="h-3.5 w-3.5" /> Geser tabel
+            </div>
+          </div>
+
           <div className="overflow-x-auto">
-            <table className="w-full text-xs sm:text-sm border-collapse min-w-[580px] sm:min-w-[640px]">
+            <table className="w-full text-xs sm:text-sm border-collapse min-w-[620px]">
               <thead>
-                <tr className="border-b-2 border-black bg-gray-100 text-black">
-                  <th rowSpan={2} className="border-r-2 border-black p-2 text-center w-10 sm:w-12 font-black">
+                <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-600">
+                  <th rowSpan={2} className="border-r border-slate-200 p-2.5 text-center w-10 sm:w-12 font-semibold text-xs">
                     No
                   </th>
-                  <th rowSpan={2} className="border-r-2 border-black p-2 text-left min-w-[140px] sm:min-w-[180px] font-black">
-                    Mata pelajaran
+                  <th rowSpan={2} className="border-r border-slate-200 p-2.5 text-left min-w-[160px] sm:min-w-[200px] font-semibold text-xs">
+                    Mata Pelajaran
                   </th>
-                  <th colSpan={5} className="border-r-2 border-black p-1 text-center font-black bg-blue-50">
+                  <th colSpan={5} className="border-r border-slate-200 p-1.5 text-center font-semibold text-xs bg-indigo-50/40 text-indigo-900">
                     Nilai Semester
                   </th>
-                  <th rowSpan={2} className="border-r-2 border-black p-2 text-center w-16 sm:w-20 font-black bg-yellow-100">
-                    Σ
+                  <th rowSpan={2} className="border-r border-slate-200 p-2 text-center w-16 sm:w-20 font-semibold text-xs bg-amber-50/50 text-amber-900">
+                    Jumlah
                   </th>
-                  <th rowSpan={2} className="p-2 text-center w-20 sm:w-24 font-black bg-green-100">
-                    Re-rata
+                  <th rowSpan={2} className="p-2 text-center w-20 sm:w-24 font-semibold text-xs bg-emerald-50/50 text-emerald-900">
+                    Rerata
                   </th>
                 </tr>
-                <tr className="border-b-2 border-black bg-gray-50 text-[11px] text-gray-800 font-bold">
-                  <th className="border-r border-black p-1 text-center w-12 sm:w-14 font-black">I</th>
-                  <th className="border-r border-black p-1 text-center w-12 sm:w-14 font-black">II</th>
-                  <th className="border-r border-black p-1 text-center w-12 sm:w-14 font-black">III</th>
-                  <th className="border-r border-black p-1 text-center w-12 sm:w-14 font-black">IV</th>
-                  <th className="border-r-2 border-black p-1 text-center w-12 sm:w-14 font-black">V</th>
+                <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] text-slate-500">
+                  <th className="border-r border-slate-200 p-1 text-center w-12 sm:w-14 font-medium">I</th>
+                  <th className="border-r border-slate-200 p-1 text-center w-12 sm:w-14 font-medium">II</th>
+                  <th className="border-r border-slate-200 p-1 text-center w-12 sm:w-14 font-medium">III</th>
+                  <th className="border-r border-slate-200 p-1 text-center w-12 sm:w-14 font-medium">IV</th>
+                  <th className="border-r border-slate-200 p-1 text-center w-12 sm:w-14 font-medium">V</th>
                 </tr>
               </thead>
               <tbody>
@@ -387,95 +405,95 @@ export default function RaporPage() {
                   return (
                     <tr
                       key={sub.id}
-                      className={`border-b border-black/30 transition-colors ${
-                        stats.hasValue ? "bg-green-50/30" : "hover:bg-yellow-50/50"
+                      className={`border-b border-slate-100 transition-colors ${
+                        stats.hasValue ? "bg-indigo-50/15 hover:bg-indigo-50/30" : "hover:bg-slate-50/60"
                       }`}
                     >
-                      <td className="border-r-2 border-black p-1.5 sm:p-2 text-center font-bold text-xs">
+                      <td className="border-r border-slate-200 p-2 text-center text-slate-500 font-mono text-xs">
                         {rowNo}
                       </td>
-                      <td className="border-r-2 border-black p-1.5 sm:p-2 font-bold text-black text-xs sm:text-sm">
+                      <td className="border-r border-slate-200 p-2 font-medium text-slate-800 text-xs sm:text-sm">
                         {sub.name}
                       </td>
 
                       {/* I */}
-                      <td className="border-r border-black p-0.5">
+                      <td className="border-r border-slate-200 p-1">
                         <input
                           type="number"
                           min={0}
                           max={100}
                           step="any"
-                          placeholder=""
+                          placeholder="-"
                           value={item.sem1}
                           onChange={(e) => handleSemesterChange(sub.id, "sem1", e.target.value)}
-                          className="w-full text-center font-mono font-bold text-xs sm:text-sm p-1 sm:p-1.5 border border-black/40 bg-white focus:bg-yellow-100 focus:outline-none focus:ring-1 focus:ring-black"
+                          className="w-full text-center font-mono font-medium text-xs sm:text-sm py-1.5 px-1 rounded-md border border-slate-200 bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:bg-indigo-50/20 focus:outline-none transition-all placeholder:text-slate-300"
                         />
                       </td>
 
                       {/* II */}
-                      <td className="border-r border-black p-0.5">
+                      <td className="border-r border-slate-200 p-1">
                         <input
                           type="number"
                           min={0}
                           max={100}
                           step="any"
-                          placeholder=""
+                          placeholder="-"
                           value={item.sem2}
                           onChange={(e) => handleSemesterChange(sub.id, "sem2", e.target.value)}
-                          className="w-full text-center font-mono font-bold text-xs sm:text-sm p-1 sm:p-1.5 border border-black/40 bg-white focus:bg-yellow-100 focus:outline-none focus:ring-1 focus:ring-black"
+                          className="w-full text-center font-mono font-medium text-xs sm:text-sm py-1.5 px-1 rounded-md border border-slate-200 bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:bg-indigo-50/20 focus:outline-none transition-all placeholder:text-slate-300"
                         />
                       </td>
 
                       {/* III */}
-                      <td className="border-r border-black p-0.5">
+                      <td className="border-r border-slate-200 p-1">
                         <input
                           type="number"
                           min={0}
                           max={100}
                           step="any"
-                          placeholder=""
+                          placeholder="-"
                           value={item.sem3}
                           onChange={(e) => handleSemesterChange(sub.id, "sem3", e.target.value)}
-                          className="w-full text-center font-mono font-bold text-xs sm:text-sm p-1 sm:p-1.5 border border-black/40 bg-white focus:bg-yellow-100 focus:outline-none focus:ring-1 focus:ring-black"
+                          className="w-full text-center font-mono font-medium text-xs sm:text-sm py-1.5 px-1 rounded-md border border-slate-200 bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:bg-indigo-50/20 focus:outline-none transition-all placeholder:text-slate-300"
                         />
                       </td>
 
                       {/* IV */}
-                      <td className="border-r border-black p-0.5">
+                      <td className="border-r border-slate-200 p-1">
                         <input
                           type="number"
                           min={0}
                           max={100}
                           step="any"
-                          placeholder=""
+                          placeholder="-"
                           value={item.sem4}
                           onChange={(e) => handleSemesterChange(sub.id, "sem4", e.target.value)}
-                          className="w-full text-center font-mono font-bold text-xs sm:text-sm p-1 sm:p-1.5 border border-black/40 bg-white focus:bg-yellow-100 focus:outline-none focus:ring-1 focus:ring-black"
+                          className="w-full text-center font-mono font-medium text-xs sm:text-sm py-1.5 px-1 rounded-md border border-slate-200 bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:bg-indigo-50/20 focus:outline-none transition-all placeholder:text-slate-300"
                         />
                       </td>
 
                       {/* V */}
-                      <td className="border-r-2 border-black p-0.5">
+                      <td className="border-r border-slate-200 p-1">
                         <input
                           type="number"
                           min={0}
                           max={100}
                           step="any"
-                          placeholder=""
+                          placeholder="-"
                           value={item.sem5}
                           onChange={(e) => handleSemesterChange(sub.id, "sem5", e.target.value)}
-                          className="w-full text-center font-mono font-bold text-xs sm:text-sm p-1 sm:p-1.5 border border-black/40 bg-white focus:bg-yellow-100 focus:outline-none focus:ring-1 focus:ring-black"
+                          className="w-full text-center font-mono font-medium text-xs sm:text-sm py-1.5 px-1 rounded-md border border-slate-200 bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:bg-indigo-50/20 focus:outline-none transition-all placeholder:text-slate-300"
                         />
                       </td>
 
-                      {/* Σ (Jumlah) */}
-                      <td className="border-r-2 border-black p-1.5 sm:p-2 text-center font-mono font-bold text-xs bg-yellow-50/60">
-                        {stats.hasValue ? stats.sum.toFixed(0) : ""}
+                      {/* Jumlah */}
+                      <td className="border-r border-slate-200 p-1.5 sm:p-2 text-center font-mono font-semibold text-xs text-amber-900 bg-amber-50/40">
+                        {stats.hasValue ? stats.sum.toFixed(0) : <span className="text-slate-300">-</span>}
                       </td>
 
                       {/* Re-rata */}
-                      <td className="p-1.5 sm:p-2 text-center font-mono font-black text-xs sm:text-sm bg-green-50/60 text-green-950">
-                        {stats.hasValue ? stats.avg.toFixed(1) : ""}
+                      <td className="p-1.5 sm:p-2 text-center font-mono font-bold text-xs sm:text-sm text-emerald-700 bg-emerald-50/40">
+                        {stats.hasValue ? stats.avg.toFixed(1) : <span className="text-slate-300">-</span>}
                       </td>
                     </tr>
                   );
@@ -486,18 +504,18 @@ export default function RaporPage() {
         </div>
       )}
 
-      {/* Floating / Bottom Save Bar */}
-      <div className="sticky bottom-2 sm:bottom-4 z-20 nb-card bg-white p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-4 border-black shadow-[4px_4px_0px_0px_#000]">
+      {/* ── STICKY BOTTOM SAVE BAR ── */}
+      <div className="fixed bottom-4 left-4 right-4 md:left-72 md:right-8 z-30 flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white/85 backdrop-blur-md border border-slate-200/90 shadow-lg transition-all">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 sm:h-10 sm:w-10 bg-yellow-400 border-2 border-black flex items-center justify-center font-black shrink-0 text-sm sm:text-base">
+          <div className="h-9 w-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center font-bold text-indigo-600 shrink-0 text-sm">
             {filledSubjectCount}
           </div>
           <div>
-            <p className="text-xs sm:text-sm font-black text-black">
-              {filledSubjectCount} dari {subjects.length} Mata Pelajaran Terisi
+            <p className="text-xs sm:text-sm font-semibold text-slate-900">
+              {filledSubjectCount} dari {subjects.length} Mapel Terisi
             </p>
-            <p className="text-[10px] sm:text-xs text-gray-600 font-bold">
-              Re-rata setiap mata pelajaran dihitung otomatis untuk rekomendasi karir SAW.
+            <p className="text-[11px] text-slate-500 hidden sm:block">
+              Rerata nilai otomatis dihitung untuk kalkulasi rekomendasi karir SAW.
             </p>
           </div>
         </div>
@@ -505,11 +523,11 @@ export default function RaporPage() {
         <Button
           type="submit"
           disabled={saving || filledSubjectCount === 0}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-black uppercase"
+          className="flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm"
           id="btn-simpan-rapor"
         >
           <Save className="h-4 w-4" />
-          {saving ? "Menyimpan..." : "Simpan Angket Nilai"}
+          {saving ? "Menyimpan..." : "Simpan Nilai Rapor"}
         </Button>
       </div>
     </form>

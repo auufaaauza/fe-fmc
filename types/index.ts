@@ -128,6 +128,7 @@ export interface Recommendation {
   counselor_notes?: string | null;
   counselor_id?: number | null;
   counselor_reviewed_at?: string | null;
+  is_validated: boolean;
   counselor?: User | null;
   user?: User;
   results: RecommendationResult[];
@@ -145,6 +146,7 @@ export interface StudentListItem {
   rapor_complete: boolean;
   questionnaire_complete: boolean;
   recommendation_complete: boolean;
+  is_validated?: boolean;
 }
 
 export interface AdminListItem {

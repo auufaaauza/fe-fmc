@@ -560,7 +560,7 @@ export default function ProgramStudiPage() {
                       <div className="text-xs">
                         <strong className="font-black text-gray-900">Prospek Karir: </strong>
                         <span className="font-medium text-gray-700">
-                          {program.career_paths.join(" • ")}
+                          {program.career_paths.join(" / ")}
                         </span>
                       </div>
                     )}

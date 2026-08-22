@@ -9,34 +9,49 @@ interface ScoreBreakdownProps {
 export function ScoreBreakdown({ result }: ScoreBreakdownProps) {
   const criteria = result.program.criteria;
 
+  const items = [
+    {
+      title: `C1: ${criteria?.primary_subject?.name ?? "Mapel Utama"}`,
+      rows: [
+        ["Nilai Asli", result.primary_score ?? 0],
+        ["Normalisasi", result.normalized_primary],
+        ["Bobot", criteria?.primary_weight],
+      ],
+      className: "border-amber-100 bg-amber-50/70 text-amber-900",
+    },
+    {
+      title: `C2: ${criteria?.secondary_subject?.name ?? "Mapel Pendukung"}`,
+      rows: [
+        ["Nilai Asli", result.secondary_score ?? 0],
+        ["Normalisasi", result.normalized_secondary],
+        ["Bobot", criteria?.secondary_weight ?? 0],
+      ],
+      className: "border-blue-100 bg-blue-50/70 text-blue-900",
+    },
+    {
+      title: `C3: Minat (${criteria?.interest_category?.name ?? "RIASEC"})`,
+      rows: [
+        ["Skor Minat", result.interest_score ?? 0],
+        ["Normalisasi", result.normalized_interest],
+        ["Bobot", criteria?.interest_weight],
+      ],
+      className: "border-indigo-100 bg-indigo-50/70 text-indigo-900",
+    },
+  ];
+
   return (
-    <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 border-t-2 border-black pt-3 text-xs sm:text-sm font-bold">
-      <div className="bg-yellow-50 border-2 border-black p-2.5 space-y-0.5">
-        <div className="text-[11px] font-black uppercase text-amber-900">
-          C1: {criteria?.primary_subject?.name ?? "Mapel Utama"}
+    <div className="mt-3 grid grid-cols-1 gap-3 border-t border-slate-100 pt-3 text-xs sm:grid-cols-3">
+      {items.map((item) => (
+        <div key={item.title} className={`space-y-1 rounded-lg border p-3 ${item.className}`}>
+          <div className="text-[11px] font-semibold uppercase">{item.title}</div>
+          {item.rows.map(([label, value]) => (
+            <div key={label} className="flex items-center justify-between gap-2 font-mono text-xs text-slate-700">
+              <span>{label}</span>
+              <strong className="text-slate-900">{value}</strong>
+            </div>
+          ))}
         </div>
-        <div className="font-mono text-xs">Nilai Asli: <strong>{result.primary_score ?? 0}</strong></div>
-        <div className="font-mono text-xs">Normalisasi: <strong>{result.normalized_primary}</strong></div>
-        <div className="font-mono text-xs text-gray-700">Bobot: {criteria?.primary_weight}</div>
-      </div>
-
-      <div className="bg-blue-50 border-2 border-black p-2.5 space-y-0.5">
-        <div className="text-[11px] font-black uppercase text-blue-900">
-          C2: {criteria?.secondary_subject?.name ?? "Mapel Pendukung"}
-        </div>
-        <div className="font-mono text-xs">Nilai Asli: <strong>{result.secondary_score ?? 0}</strong></div>
-        <div className="font-mono text-xs">Normalisasi: <strong>{result.normalized_secondary}</strong></div>
-        <div className="font-mono text-xs text-gray-700">Bobot: {criteria?.secondary_weight ?? 0}</div>
-      </div>
-
-      <div className="bg-purple-50 border-2 border-black p-2.5 space-y-0.5">
-        <div className="text-[11px] font-black uppercase text-purple-900">
-          C3: Minat ({criteria?.interest_category?.name ?? "RIASEC"})
-        </div>
-        <div className="font-mono text-xs">Skor Minat: <strong>{result.interest_score ?? 0}</strong></div>
-        <div className="font-mono text-xs">Normalisasi: <strong>{result.normalized_interest}</strong></div>
-        <div className="font-mono text-xs text-gray-700">Bobot: {criteria?.interest_weight}</div>
-      </div>
+      ))}
     </div>
   );
 }

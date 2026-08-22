@@ -32,29 +32,32 @@ export function SuperAdminSidebar() {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Close mobile drawer on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
+  const navLinkBase =
+    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150";
+  const navLinkActive = "bg-indigo-50/80 text-indigo-700 shadow-sm shadow-indigo-500/10";
+  const navLinkInactive = "text-slate-600 hover:bg-white/65 hover:text-slate-900";
+
   return (
     <>
-      {/* ── Mobile Top Header (Visible only on < md) ── */}
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b-4 border-black bg-purple-300 px-4 py-2.5 md:hidden shadow-[0px_2px_0px_0px_#000]">
+      <header className="nb-header sticky top-0 z-30 flex items-center justify-between px-4 py-3 shadow-sm md:hidden">
         <div className="flex items-center gap-2.5">
           <Image
             src="/image/logo.png"
             alt="Find My Career"
             width={120}
             height={120}
-            className="h-10 w-auto object-contain"
+            className="h-8 w-auto object-contain"
             priority
           />
           <div className="flex flex-col">
-            <span className="text-sm font-black tracking-tight text-black leading-none">
-              FIND MY CAREER
+            <span className="text-sm font-semibold leading-none text-slate-800">
+              Find My Career
             </span>
-            <span className="text-[9px] font-bold text-purple-950">
+            <span className="mt-0.5 text-[10px] text-slate-500">
               Super Admin
             </span>
           </div>
@@ -63,72 +66,66 @@ export function SuperAdminSidebar() {
         <button
           type="button"
           onClick={() => setMobileOpen((prev) => !prev)}
-          className="border-2 border-black bg-white p-1.5 shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+          className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/70"
           aria-label="Toggle menu"
         >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </header>
 
-      {/* ── Mobile Drawer Overlay ── */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/20 backdrop-blur-sm md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* ── Sidebar (Desktop Fixed & Mobile Slide Drawer) ── */}
       <aside
         className={cn(
-          "nb-sidebar fixed inset-y-0 left-0 z-50 flex w-72 flex-col justify-between bg-white p-5 transition-transform duration-200 ease-in-out md:static md:w-64 md:translate-x-0 md:min-h-screen",
+          "nb-sidebar fixed inset-y-0 left-0 z-50 flex w-72 flex-col justify-between p-5 transition-transform duration-200 ease-in-out md:static md:min-h-screen md:w-64 md:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div>
-          {/* Brand Logo Header */}
-          <div className="mb-5 border-b-2 border-black pb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 w-full">
-                <Image
-                  src="/image/logo.png"
-                  alt="Find My Career"
-                  width={140}
-                  height={140}
-                  className="h-14 w-14 shrink-0 object-contain"
-                  priority
-                />
-                <div className="flex flex-col">
-                  <span className="text-base font-black tracking-tight text-black leading-tight uppercase">
-                    Find My <span className="text-purple-700">Career</span>
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mt-0.5">
-                    Super Admin Portal
-                  </span>
-                </div>
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Image
+                src="/image/logo.png"
+                alt="Find My Career"
+                width={140}
+                height={140}
+                className="h-10 w-10 shrink-0 object-contain"
+                priority
+              />
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold leading-tight text-slate-800">
+                  Find My Career
+                </span>
+                <span className="mt-0.5 text-[10px] uppercase tracking-wide text-slate-400">
+                  Super Admin Portal
+                </span>
               </div>
-              <button
-                type="button"
-                onClick={() => setMobileOpen(false)}
-                className="border-2 border-black bg-white p-1 md:hidden shrink-0"
-              >
-                <X className="h-5 w-5" />
-              </button>
             </div>
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white/70 hover:text-slate-600 md:hidden"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
 
-          {/* Superadmin Badge */}
-          <div className="mb-5 border-2 border-black bg-purple-200 p-2.5 shadow-[2px_2px_0px_0px_#000]">
-            <div className="flex items-center gap-1.5 text-xs font-black text-purple-950">
-              <ShieldCheck className="h-4 w-4 shrink-0 text-purple-700" />
-              <span>PORTAL SUPER ADMIN</span>
+          <div className="mb-5 rounded-lg border border-indigo-100 bg-indigo-50/70 p-3">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-700">
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+              <span>Portal Super Admin</span>
             </div>
-            <p className="mt-0.5 text-[10px] font-bold text-purple-800">
-              Pengelola Sistem & Kemitraan
+            <p className="mt-0.5 text-[10px] text-slate-500">
+              Pengelola sistem dan kemitraan sekolah
             </p>
           </div>
 
-          <nav className="space-y-2.5">
+          <nav className="space-y-1">
             {links.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
@@ -136,12 +133,9 @@ export function SuperAdminSidebar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={cn(
-                    "flex items-center gap-3 border-2 border-black bg-white px-3.5 py-2.5 font-black transition-colors hover:bg-purple-100 shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none",
-                    isActive && "bg-yellow-300 hover:bg-yellow-300"
-                  )}
+                  className={cn(navLinkBase, isActive ? navLinkActive : navLinkInactive)}
                 >
-                  <Icon className="h-5 w-5 shrink-0" />
+                  <Icon className="h-4 w-4 shrink-0" />
                   <span>{link.label}</span>
                 </Link>
               );
@@ -149,15 +143,15 @@ export function SuperAdminSidebar() {
           </nav>
         </div>
 
-        <div className="space-y-3 border-t-2 border-black pt-4">
-          <div className="text-xs">
-            <p className="font-black text-black">{user?.name}</p>
-            <p className="truncate text-gray-600">{user?.email}</p>
+        <div className="space-y-3 border-t border-slate-100/80 pt-4">
+          <div className="px-1 text-xs">
+            <p className="font-semibold text-slate-800">{user?.name}</p>
+            <p className="mt-0.5 truncate text-slate-500">{user?.email}</p>
           </div>
           <Button
-            variant="plain"
+            variant="ghost"
             onClick={logout}
-            className="flex w-full items-center justify-center gap-2"
+            className="flex w-full items-center justify-start gap-2 text-red-500 hover:bg-red-50/80 hover:text-red-600"
           >
             <LogOut className="h-4 w-4" />
             Keluar

@@ -3,19 +3,21 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  CheckCircle2,
+  AlertCircle,
   Download,
   Edit,
   Eye,
+  FileSpreadsheet,
   KeyRound,
   Layers,
+  Loader2,
   Plus,
+  ShieldCheck,
+  Clock,
   Trash2,
   Upload,
-  FileSpreadsheet,
   X,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
 } from "lucide-react";
 import { api } from "@/lib/axios";
 import type { SchoolClass, StudentListItem } from "@/types";
@@ -34,21 +36,8 @@ import { useToast } from "@/components/ui/toast";
 
 const emptyForm = { name: "", nisn: "", class: "", password: "", is_active: true };
 
-// ── Import Result Types ───────────────────────────────────────────────────────
-
-interface ImportResultRow {
-  nisn: string;
-  name: string;
-  action: string;
-  scores: number;
-}
-
-interface ImportSummary {
-  total_processed: number;
-  total_errors: number;
-}
-
-// ── Main Component ────────────────────────────────────────────────────────────
+interface ImportResultRow { nisn: string; name: string; action: string; scores: number; }
+interface ImportSummary { total_processed: number; total_errors: number; }
 
 export default function AdminSiswaPage() {
   const [students, setStudents] = useState<StudentListItem[]>([]);
@@ -61,7 +50,6 @@ export default function AdminSiswaPage() {
   const [form, setForm] = useState(emptyForm);
   const { toast } = useToast();
 
-  // Import modal state
   const [importOpen, setImportOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
@@ -73,11 +61,9 @@ export default function AdminSiswaPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filtered = useMemo(() => {
-    return students.filter((student) => {
-      const matchesSearch = `${student.nisn} ${student.name} ${student.class ?? ""}`
-        .toLowerCase()
-        .includes(search.toLowerCase());
-      const matchesClass = selectedClass ? student.class === selectedClass : true;
+    return students.filter((s) => {
+      const matchesSearch = `${s.nisn} ${s.name} ${s.class ?? ""}`.toLowerCase().includes(search.toLowerCase());
+      const matchesClass = selectedClass ? s.class === selectedClass : true;
       return matchesSearch && matchesClass;
     });
   }, [students, search, selectedClass]);
@@ -91,40 +77,23 @@ export default function AdminSiswaPage() {
       setStudents(resStudents.data.data || []);
       setClasses(resClasses.data.data || []);
     } catch (error: any) {
-      toast({
-        title: "Gagal memuat data",
-        description: error.appMessage,
-        type: "error",
-      });
+      toast({ title: "Gagal memuat data", description: error.appMessage, type: "error" });
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
-  function startCreate() {
-    setEditing(null);
-    setForm(emptyForm);
-    setOpen(true);
-  }
-
+  function startCreate() { setEditing(null); setForm(emptyForm); setOpen(true); }
   function startEdit(student: StudentListItem) {
     setEditing(student);
-    setForm({
-      name: student.name,
-      nisn: student.nisn,
-      class: student.class ?? "",
-      password: "",
-      is_active: student.is_active,
-    });
+    setForm({ name: student.name, nisn: student.nisn, class: student.class ?? "", password: "", is_active: student.is_active });
     setOpen(true);
   }
 
-  async function saveStudent(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function saveStudent(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     try {
       if (editing) {
         await api.put(`/admin/students/${editing.id}`, form);
@@ -136,7 +105,7 @@ export default function AdminSiswaPage() {
       setOpen(false);
       await loadData();
     } catch (error: any) {
-      toast({ title: "Gagal menyimpan siswa", description: error.appMessage, type: "error" });
+      toast({ title: "Gagal menyimpan", description: error.appMessage, type: "error" });
     }
   }
 
@@ -147,34 +116,19 @@ export default function AdminSiswaPage() {
       toast({ title: "Berhasil", description: "Siswa dihapus.", type: "success" });
       await loadData();
     } catch (error: any) {
-      toast({ title: "Gagal menghapus siswa", description: error.appMessage, type: "error" });
+      toast({ title: "Gagal menghapus", description: error.appMessage, type: "error" });
     }
   }
 
   async function resetPassword(student: StudentListItem) {
-    if (
-      !window.confirm(
-        `Reset password untuk ${student.name} (NISN: ${student.nisn}) menjadi 'siswa123'?`
-      )
-    )
-      return;
+    if (!window.confirm(`Reset password ${student.name} (${student.nisn}) menjadi 'siswa123'?`)) return;
     try {
       const res = await api.post(`/admin/students/${student.id}/reset-password`);
-      toast({
-        title: "Password Direset",
-        description: res.data.message || "Password direset ke siswa123",
-        type: "success",
-      });
+      toast({ title: "Password Direset", description: res.data.message || "Password direset ke siswa123", type: "success" });
     } catch (error: any) {
-      toast({
-        title: "Gagal reset password",
-        description: error.appMessage || "Terjadi kesalahan.",
-        type: "error",
-      });
+      toast({ title: "Gagal reset password", description: error.appMessage || "Terjadi kesalahan.", type: "error" });
     }
   }
-
-  // ── Export ────────────────────────────────────────────────────────────────────
 
   async function handleExport() {
     setExporting(true);
@@ -183,19 +137,15 @@ export default function AdminSiswaPage() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      const contentDisposition = response.headers["content-disposition"] || "";
-      const match = contentDisposition.match(/filename="?(.+)"?/);
+      const cd = response.headers["content-disposition"] || "";
+      const match = cd.match(/filename="?(.+)"?/);
       link.download = match ? match[1] : "data-siswa-nilai.xlsx";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      document.body.appendChild(link); link.click(); link.remove();
       window.URL.revokeObjectURL(url);
       toast({ title: "Export Berhasil", description: "File Excel berhasil diunduh.", type: "success" });
     } catch (error: any) {
       toast({ title: "Gagal export", description: error.appMessage || "Terjadi kesalahan.", type: "error" });
-    } finally {
-      setExporting(false);
-    }
+    } finally { setExporting(false); }
   }
 
   async function handleDownloadTemplate() {
@@ -203,60 +153,44 @@ export default function AdminSiswaPage() {
       const response = await api.get("/admin/students/import-template", { responseType: "blob" });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
-      link.href = url;
-      link.download = "template-import-siswa.xlsx";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      link.href = url; link.download = "template-import-siswa.xlsx";
+      document.body.appendChild(link); link.click(); link.remove();
       window.URL.revokeObjectURL(url);
-    } catch {
-      toast({ title: "Gagal", description: "Gagal mengunduh template.", type: "error" });
-    }
+    } catch { toast({ title: "Gagal", description: "Gagal mengunduh template.", type: "error" }); }
   }
-
-  // ── Import ────────────────────────────────────────────────────────────────────
 
   function openImportModal() {
-    setImportFile(null);
-    setImportDone(false);
-    setImportResults([]);
-    setImportErrors([]);
-    setImportSummary(null);
-    setImportOpen(true);
-  }
-
-  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0] || null;
-    setImportFile(file);
+    setImportFile(null); setImportDone(false); setImportResults([]);
+    setImportErrors([]); setImportSummary(null); setImportOpen(true);
   }
 
   async function handleImport() {
     if (!importFile) return;
     setImporting(true);
     try {
-      const formData = new FormData();
-      formData.append("file", importFile);
-      const res = await api.post("/admin/students/import", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const fd = new FormData();
+      fd.append("file", importFile);
+      const res = await api.post("/admin/students/import", fd, { headers: { "Content-Type": "multipart/form-data" } });
       setImportResults(res.data.results || []);
       setImportErrors(res.data.errors || []);
       setImportSummary(res.data.summary || null);
       setImportDone(true);
       await loadData();
-      toast({
-        title: "Import Selesai",
-        description: `${res.data.summary?.total_processed ?? 0} siswa diproses.`,
-        type: "success",
-      });
+      toast({ title: "Import Selesai", description: `${res.data.summary?.total_processed ?? 0} siswa diproses.`, type: "success" });
     } catch (error: any) {
       toast({ title: "Gagal import", description: error.appMessage || "File tidak valid.", type: "error" });
-    } finally {
-      setImporting(false);
-    }
+    } finally { setImporting(false); }
   }
 
   if (loading) return <LoadingSpinner />;
+
+  const StatusBadge = ({ ok, okLabel = "Lengkap", noLabel = "Belum" }: { ok: boolean; okLabel?: string; noLabel?: string }) => (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+      ok ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"
+    }`}>
+      {ok ? okLabel : noLabel}
+    </span>
+  );
 
   return (
     <div className="space-y-6">
@@ -264,47 +198,27 @@ export default function AdminSiswaPage() {
         title="Manajemen Data Siswa"
         action={
           <div className="flex flex-wrap gap-2">
-            {/* Kelola Kelas */}
             <Link href="/admin/kelas">
-              <Button variant="outline" className="flex items-center gap-2">
-                <Layers className="h-4 w-4" />
-                Kelola Kelas
+              <Button variant="glass" className="flex items-center gap-2">
+                <Layers className="h-4 w-4" /> Kelola Kelas
               </Button>
             </Link>
 
-            {/* Export Button */}
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 border-green-600 text-green-700 hover:bg-green-50"
-              onClick={handleExport}
-              disabled={exporting}
-              id="btn-export-siswa"
-            >
-              {exporting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
+            <Button variant="glass" onClick={handleExport} disabled={exporting} id="btn-export-siswa"
+              className="flex items-center gap-2 text-emerald-700 border-emerald-200">
+              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
               {exporting ? "Mengunduh..." : "Export Excel"}
             </Button>
 
-            {/* Import Button */}
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 border-blue-600 text-blue-700 hover:bg-blue-50"
-              onClick={openImportModal}
-              id="btn-import-siswa"
-            >
-              <Upload className="h-4 w-4" />
-              Import Excel
+            <Button variant="glass" onClick={openImportModal} id="btn-import-siswa"
+              className="flex items-center gap-2 text-blue-700 border-blue-200">
+              <Upload className="h-4 w-4" /> Import Excel
             </Button>
 
-            {/* Tambah Siswa */}
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button onClick={startCreate} className="flex items-center gap-2" id="btn-tambah-siswa">
-                  <Plus className="h-4 w-4" />
-                  Tambah Siswa
+                  <Plus className="h-4 w-4" /> Tambah Siswa
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -313,75 +227,37 @@ export default function AdminSiswaPage() {
                 </DialogHeader>
                 <form onSubmit={saveStudent} className="space-y-4">
                   <div>
-                    <label className="mb-1 block text-sm font-black">Nama Lengkap</label>
-                    <Input
-                      placeholder="Nama Lengkap Siswa"
-                      value={form.name}
-                      onChange={(event) => setForm({ ...form, name: event.target.value })}
-                      required
-                    />
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700">Nama Lengkap</label>
+                    <Input placeholder="Nama Lengkap Siswa" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
                   </div>
-
                   <div>
-                    <label className="mb-1 block text-sm font-black">NISN</label>
-                    <Input
-                      placeholder="Nomor Induk Siswa Nasional"
-                      value={form.nisn}
-                      onChange={(event) => setForm({ ...form, nisn: event.target.value })}
-                      required
-                    />
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700">NISN</label>
+                    <Input placeholder="Nomor Induk Siswa Nasional" value={form.nisn} onChange={(e) => setForm({ ...form, nisn: e.target.value })} required />
                   </div>
-
                   <div>
-                    <label className="mb-1 block text-sm font-black">Kelas</label>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700">Kelas</label>
                     {classes.length > 0 ? (
-                      <select
-                        value={form.class}
-                        onChange={(e) => setForm({ ...form, class: e.target.value })}
-                        className="nb-input"
-                      >
+                      <select value={form.class} onChange={(e) => setForm({ ...form, class: e.target.value })} className="nb-input">
                         <option value="">-- Pilih Kelas --</option>
-                        {classes.map((c) => (
-                          <option key={c.id} value={c.name}>
-                            {c.name}
-                          </option>
-                        ))}
+                        {classes.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
                       </select>
                     ) : (
-                      <Input
-                        placeholder="Contoh: XII IPA 1"
-                        value={form.class}
-                        onChange={(event) => setForm({ ...form, class: event.target.value })}
-                      />
+                      <Input placeholder="Contoh: XII IPA 1" value={form.class} onChange={(e) => setForm({ ...form, class: e.target.value })} />
                     )}
                   </div>
-
                   <div>
-                    <label className="mb-1 block text-sm font-black">
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700">
                       {editing ? "Password Baru (Kosongkan jika tidak diubah)" : "Password"}
                     </label>
-                    <Input
-                      placeholder={editing ? "Password baru (opsional)" : "Password"}
-                      type="password"
-                      value={form.password}
-                      onChange={(event) => setForm({ ...form, password: event.target.value })}
-                      required={!editing}
-                    />
+                    <Input placeholder={editing ? "Password baru (opsional)" : "Password"} type="password"
+                      value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required={!editing} />
                   </div>
-
-                  <label className="flex items-center gap-3 font-black">
-                    <input
-                      type="checkbox"
-                      checked={form.is_active}
-                      onChange={(event) => setForm({ ...form, is_active: event.target.checked })}
-                      className="h-4 w-4 border-2 border-black accent-yellow-400"
-                    />
+                  <label className="flex items-center gap-3 text-sm text-slate-700 cursor-pointer">
+                    <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+                      className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
                     Akun Siswa Aktif
                   </label>
-
-                  <Button type="submit" className="w-full">
-                    Simpan Data Siswa
-                  </Button>
+                  <Button type="submit" className="w-full">Simpan Data Siswa</Button>
                 </form>
               </DialogContent>
             </Dialog>
@@ -389,114 +265,97 @@ export default function AdminSiswaPage() {
         }
       />
 
-      {/* Filter and Search Bar */}
+      {/* Filter & Search */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
-          <label className="mb-1 block text-xs font-black uppercase text-gray-600">Filter Kelas</label>
-          <select
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-            className="nb-input"
-          >
+          <label className="mb-1.5 block text-xs font-medium text-slate-500 uppercase tracking-wide">Filter Kelas</label>
+          <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="nb-input">
             <option value="">-- Semua Kelas ({students.length} Siswa) --</option>
-            {classes.map((c) => (
-              <option key={c.id} value={c.name}>
-                {c.name}
-              </option>
-            ))}
+            {classes.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
           </select>
         </div>
-
         <div className="sm:col-span-2">
-          <label className="mb-1 block text-xs font-black uppercase text-gray-600">Pencarian Siswa</label>
-          <Input
-            placeholder="Cari berdasarkan NIS, nama, atau kelas..."
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
+          <label className="mb-1.5 block text-xs font-medium text-slate-500 uppercase tracking-wide">Pencarian Siswa</label>
+          <Input placeholder="Cari berdasarkan NIS, nama, atau kelas..." value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
       </div>
 
-      {/* Student Table */}
+      {/* Table */}
       <div className="nb-card overflow-x-auto">
-        <table className="nb-table w-full border-collapse bg-white">
+        <table className="nb-table w-full">
           <thead>
             <tr>
               <th>NIS</th>
               <th>Nama Siswa</th>
               <th>Kelas</th>
-              <th>Status Rapor</th>
-              <th>Status Kuesioner</th>
-              <th>Status Rekomendasi</th>
+              <th>Rapor</th>
+              <th>Kuesioner</th>
+              <th>Rekomendasi</th>
+              <th>Validasi</th>
               <th className="text-right">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center font-black text-gray-500">
-                  Tidak ada data siswa yang cocok dengan kriteria filter/pencarian.
+                <td colSpan={8} className="py-8 text-center text-slate-400">
+                  Tidak ada data siswa yang cocok dengan kriteria.
                 </td>
               </tr>
             ) : (
               filtered.map((student) => (
                 <tr key={student.id}>
-                  <td className="font-mono text-sm font-black">{student.nisn}</td>
+                  <td className="font-mono text-xs text-slate-600">{student.nisn}</td>
                   <td>
-                    <p className="font-black text-black">{student.name}</p>
-                    {student.email && <p className="text-xs text-gray-500">{student.email}</p>}
+                    <p className="font-medium text-slate-900">{student.name}</p>
+                    {student.email && <p className="text-xs text-slate-400">{student.email}</p>}
                   </td>
                   <td>
-                    <span className="nb-badge bg-yellow-300">{student.class ?? "-"}</span>
+                    <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+                      {student.class ?? "-"}
+                    </span>
                   </td>
-                  <td>
-                    {student.rapor_complete ? (
-                      <span className="nb-badge bg-green-300">Lengkap</span>
-                    ) : (
-                      <span className="nb-badge bg-gray-200 text-gray-700">Belum</span>
-                    )}
-                  </td>
-                  <td>
-                    {student.questionnaire_complete ? (
-                      <span className="nb-badge bg-green-300">Lengkap</span>
-                    ) : (
-                      <span className="nb-badge bg-gray-200 text-gray-700">Belum</span>
-                    )}
-                  </td>
+                  <td><StatusBadge ok={student.rapor_complete} /></td>
+                  <td><StatusBadge ok={student.questionnaire_complete} /></td>
+                  <td><StatusBadge ok={student.recommendation_complete} okLabel="Ada" noLabel="Belum" /></td>
                   <td>
                     {student.recommendation_complete ? (
-                      <span className="nb-badge bg-purple-300">Ada</span>
+                      student.is_validated ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700">
+                          <ShieldCheck className="h-3 w-3" /> Tervalidasi
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                          <Clock className="h-3 w-3" /> Pending
+                        </span>
+                      )
                     ) : (
-                      <span className="nb-badge bg-gray-200 text-gray-700">Belum</span>
+                      <span className="text-xs text-slate-400">-</span>
                     )}
                   </td>
                   <td className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1.5">
                       <button
-                        className="border-2 border-black bg-blue-300 p-2 hover:bg-blue-400"
-                        onClick={() => resetPassword(student)}
-                        title="Reset Password ke siswa123"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        onClick={() => resetPassword(student)} title="Reset Password"
                       >
-                        <KeyRound className="h-4 w-4 text-blue-950" />
+                        <KeyRound className="h-4 w-4" />
                       </button>
                       <button
-                        className="border-2 border-black bg-yellow-300 p-2 hover:bg-yellow-400"
-                        onClick={() => startEdit(student)}
-                        title="Edit Siswa"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                        onClick={() => startEdit(student)} title="Edit Siswa"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
-                        className="border-2 border-black bg-red-300 p-2 hover:bg-red-400"
-                        onClick={() => deleteStudent(student)}
-                        title="Hapus Siswa"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        onClick={() => deleteStudent(student)} title="Hapus Siswa"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
                       <Link
-                        className="border-2 border-black bg-white p-2 hover:bg-gray-100"
-                        href={`/admin/siswa/${student.id}`}
-                        title="Lihat Detail & Rekomendasi"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                        href={`/admin/siswa/${student.id}`} title="Lihat Detail"
                       >
                         <Eye className="h-4 w-4" />
                       </Link>
@@ -509,158 +368,107 @@ export default function AdminSiswaPage() {
         </table>
       </div>
 
-      {/* ── Import Modal ───────────────────────────────────────────────────────── */}
+      {/* Import Modal */}
       <Dialog open={importOpen} onOpenChange={setImportOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <FileSpreadsheet className="h-5 w-5 text-blue-600" />
+              <FileSpreadsheet className="h-5 w-5 text-indigo-500" />
               Import Data Siswa dari Excel
             </DialogTitle>
           </DialogHeader>
 
           {!importDone ? (
             <div className="space-y-4">
-              {/* Step 1: Download Template */}
-              <div className="border-2 border-dashed border-gray-300 bg-gray-50 p-4">
-                <p className="mb-2 text-sm font-black text-gray-700">
+              <div className="rounded-xl bg-slate-50 border border-slate-200 p-4">
+                <p className="mb-3 text-sm font-medium text-slate-700">
                   Langkah 1: Unduh template Excel, isi data siswa dan nilai, lalu upload kembali.
                 </p>
-                <button
-                  onClick={handleDownloadTemplate}
-                  className="flex items-center gap-2 border-2 border-black bg-purple-200 px-3 py-1.5 text-xs font-black hover:bg-purple-300"
-                  id="btn-download-template"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  Unduh Template (.xlsx)
+                <button onClick={handleDownloadTemplate} id="btn-download-template"
+                  className="inline-flex items-center gap-2 rounded-lg bg-purple-100 px-3 py-1.5 text-xs font-medium text-purple-700 hover:bg-purple-200 transition-colors">
+                  <Download className="h-3.5 w-3.5" /> Unduh Template (.xlsx)
                 </button>
               </div>
 
-              {/* Step 2: Upload File */}
               <div>
-                <p className="mb-2 text-sm font-black text-gray-700">
-                  Langkah 2: Upload file Excel yang sudah diisi.
-                </p>
+                <p className="mb-2 text-sm font-medium text-slate-700">Langkah 2: Upload file Excel yang sudah diisi.</p>
                 <div
-                  className="flex cursor-pointer flex-col items-center justify-center gap-2 border-2 border-dashed border-blue-400 bg-blue-50 p-6 transition-colors hover:bg-blue-100"
+                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 transition-colors hover:border-indigo-300 hover:bg-indigo-50"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Upload className="h-8 w-8 text-blue-500" />
+                  <Upload className="h-8 w-8 text-slate-400" />
                   {importFile ? (
                     <div className="flex items-center gap-2">
                       <FileSpreadsheet className="h-4 w-4 text-green-600" />
-                      <span className="text-sm font-black text-green-700">{importFile.name}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setImportFile(null);
-                          if (fileInputRef.current) fileInputRef.current.value = "";
-                        }}
-                        className="text-red-500 hover:text-red-700"
-                      >
+                      <span className="text-sm font-medium text-green-700">{importFile.name}</span>
+                      <button onClick={(e) => { e.stopPropagation(); setImportFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                        className="text-red-400 hover:text-red-600 transition-colors">
                         <X className="h-4 w-4" />
                       </button>
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm font-black text-blue-700">Klik untuk pilih file Excel</p>
-                      <p className="text-xs text-gray-500">Format: .xlsx atau .xls (Maks. 5MB)</p>
+                      <p className="text-sm font-medium text-slate-600">Klik untuk pilih file Excel</p>
+                      <p className="text-xs text-slate-400">Format: .xlsx atau .xls (Maks. 5MB)</p>
                     </>
                   )}
                 </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="input-import-file"
-                />
+                <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv"
+                  onChange={(e) => setImportFile(e.target.files?.[0] || null)} className="hidden" id="input-import-file" />
               </div>
 
-              {/* Catatan */}
-              <div className="border-2 border-amber-400 bg-amber-50 p-3 text-xs font-bold text-amber-900">
-                <p className="mb-1">📌 Ketentuan Import:</p>
+              <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+                <p className="font-semibold mb-1">Ketentuan Import:</p>
                 <ul className="list-disc space-y-0.5 pl-4">
                   <li>Siswa dengan NIS yang sudah ada akan diperbarui datanya</li>
-                  <li>Siswa baru (NIS belum terdaftar) otomatis dibuat, password default: <code className="bg-amber-200 px-1">siswa123</code></li>
-                  <li>Nilai yang diisi adalah nilai rata-rata rapor (0–100)</li>
-                  <li>Kolom yang tidak diisi akan diabaikan</li>
+                  <li>Siswa baru otomatis dibuat, password default: <code className="bg-amber-200 px-1 rounded">siswa123</code></li>
+                  <li>Nilai yang diisi adalah nilai rata-rata rapor (0-100)</li>
                 </ul>
               </div>
 
               <div className="flex gap-2 pt-2">
-                <Button
-                  type="button"
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={handleImport}
-                  disabled={!importFile || importing}
-                  id="btn-proses-import"
-                >
-                  {importing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Memproses...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Proses Import
-                    </>
-                  )}
+                <Button className="flex-1 flex items-center justify-center gap-2" onClick={handleImport}
+                  disabled={!importFile || importing} id="btn-proses-import">
+                  {importing ? <><Loader2 className="h-4 w-4 animate-spin" /> Memproses...</> : <><Upload className="h-4 w-4" /> Proses Import</>}
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setImportOpen(false)}
-                >
-                  Batal
-                </Button>
+                <Button variant="plain" onClick={() => setImportOpen(false)}>Batal</Button>
               </div>
             </div>
           ) : (
-            /* Import Result */
             <div className="space-y-4">
-              {/* Summary */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="border-2 border-green-500 bg-green-50 p-3 text-center">
-                  <p className="text-2xl font-black text-green-700">{importSummary?.total_processed ?? 0}</p>
-                  <p className="text-xs font-bold text-green-600">Siswa Diproses</p>
+                <div className="rounded-xl bg-green-50 border border-green-200 p-4 text-center">
+                  <p className="text-2xl font-semibold text-green-700">{importSummary?.total_processed ?? 0}</p>
+                  <p className="text-xs text-green-600 mt-1">Siswa Diproses</p>
                 </div>
-                <div className={`border-2 p-3 text-center ${importErrors.length > 0 ? "border-red-500 bg-red-50" : "border-gray-300 bg-gray-50"}`}>
-                  <p className={`text-2xl font-black ${importErrors.length > 0 ? "text-red-700" : "text-gray-500"}`}>{importSummary?.total_errors ?? 0}</p>
-                  <p className={`text-xs font-bold ${importErrors.length > 0 ? "text-red-600" : "text-gray-500"}`}>Error</p>
+                <div className={`rounded-xl p-4 text-center border ${importErrors.length > 0 ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-200"}`}>
+                  <p className={`text-2xl font-semibold ${importErrors.length > 0 ? "text-red-700" : "text-slate-500"}`}>{importSummary?.total_errors ?? 0}</p>
+                  <p className={`text-xs mt-1 ${importErrors.length > 0 ? "text-red-600" : "text-slate-400"}`}>Error</p>
                 </div>
               </div>
 
-              {/* Results Table */}
               {importResults.length > 0 && (
-                <div className="max-h-48 overflow-y-auto border-2 border-black">
+                <div className="max-h-48 overflow-y-auto rounded-xl border border-slate-200">
                   <table className="w-full text-xs">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-2 py-1 text-left font-black">NIS</th>
-                        <th className="border border-gray-300 px-2 py-1 text-left font-black">Nama</th>
-                        <th className="border border-gray-300 px-2 py-1 font-black">Status</th>
-                        <th className="border border-gray-300 px-2 py-1 font-black">Nilai</th>
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-3 py-2 text-left font-medium text-slate-500">NIS</th>
+                        <th className="px-3 py-2 text-left font-medium text-slate-500">Nama</th>
+                        <th className="px-3 py-2 text-center font-medium text-slate-500">Status</th>
+                        <th className="px-3 py-2 text-center font-medium text-slate-500">Nilai</th>
                       </tr>
                     </thead>
                     <tbody>
                       {importResults.map((row, i) => (
-                        <tr key={i} className="odd:bg-white even:bg-gray-50">
-                          <td className="border border-gray-200 px-2 py-1 font-mono">{row.nisn}</td>
-                          <td className="border border-gray-200 px-2 py-1">{row.name}</td>
-                          <td className="border border-gray-200 px-2 py-1 text-center">
-                            <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-bold ${row.action === "dibuat baru" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
-                              {row.action === "dibuat baru" ? (
-                                <CheckCircle2 className="h-3 w-3" />
-                              ) : (
-                                <CheckCircle2 className="h-3 w-3" />
-                              )}
-                              {row.action}
+                        <tr key={i} className="border-t border-slate-100">
+                          <td className="px-3 py-2 font-mono">{row.nisn}</td>
+                          <td className="px-3 py-2">{row.name}</td>
+                          <td className="px-3 py-2 text-center">
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${row.action === "dibuat baru" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
+                              <CheckCircle2 className="h-3 w-3" /> {row.action}
                             </span>
                           </td>
-                          <td className="border border-gray-200 px-2 py-1 text-center font-black">{row.scores} mapel</td>
+                          <td className="px-3 py-2 text-center font-medium">{row.scores} mapel</td>
                         </tr>
                       ))}
                     </tbody>
@@ -668,39 +476,21 @@ export default function AdminSiswaPage() {
                 </div>
               )}
 
-              {/* Errors */}
               {importErrors.length > 0 && (
-                <div className="max-h-32 overflow-y-auto border-2 border-red-400 bg-red-50 p-3">
-                  <p className="mb-1 text-xs font-black text-red-700 flex items-center gap-1">
+                <div className="max-h-32 overflow-y-auto rounded-xl border border-red-200 bg-red-50 p-3">
+                  <p className="mb-1 flex items-center gap-1 text-xs font-semibold text-red-700">
                     <AlertCircle className="h-3.5 w-3.5" /> Pesan Error:
                   </p>
-                  {importErrors.map((err, i) => (
-                    <p key={i} className="text-xs text-red-600">• {err}</p>
-                  ))}
+                  {importErrors.map((err, i) => <p key={i} className="text-xs text-red-600">- {err}</p>)}
                 </div>
               )}
 
               <div className="flex gap-2 pt-2">
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setImportDone(false);
-                    setImportFile(null);
-                    setImportResults([]);
-                    setImportErrors([]);
-                  }}
-                  variant="outline"
-                  className="flex-1"
-                >
+                <Button variant="plain" className="flex-1"
+                  onClick={() => { setImportDone(false); setImportFile(null); setImportResults([]); setImportErrors([]); }}>
                   Import Lagi
                 </Button>
-                <Button
-                  type="button"
-                  className="flex-1"
-                  onClick={() => setImportOpen(false)}
-                >
-                  Selesai
-                </Button>
+                <Button className="flex-1" onClick={() => setImportOpen(false)}>Selesai</Button>
               </div>
             </div>
           )}
