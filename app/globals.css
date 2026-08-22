@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --nb-yellow: #FFD600;
+  --nb-pink: #FF6B9D;
+  --nb-black: #000000;
+  --nb-white: #FFFFFF;
+  --nb-bg: #FFFBF0;
+  --background: 48 100% 97%;
+  --foreground: 0 0% 0%;
+  --border: 0 0% 0%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--nb-bg);
+  color: var(--nb-black);
+}
+
+@layer components {
+  .nb-card {
+    @apply bg-white border-2 border-black rounded-none;
+    box-shadow: 4px 4px 0px 0px #000000;
+  }
+
+  .nb-card-yellow {
+    @apply bg-yellow-300 border-2 border-black rounded-none;
+    box-shadow: 4px 4px 0px 0px #000000;
+  }
+
+  .nb-btn-primary {
+    @apply bg-yellow-400 text-black font-black border-2 border-black rounded-none px-4 py-2 uppercase tracking-wide;
+    box-shadow: 3px 3px 0px 0px #000000;
+    transition: all 0.08s ease;
+  }
+
+  .nb-btn-primary:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px 0px #000000;
+  }
+
+  .nb-btn-primary:active {
+    transform: translate(3px, 3px);
+    box-shadow: none;
+  }
+
+  .nb-btn-danger {
+    @apply bg-red-400 text-black font-black border-2 border-black rounded-none px-4 py-2 uppercase;
+    box-shadow: 3px 3px 0px 0px #000000;
+  }
+
+  .nb-input {
+    @apply border-2 border-black rounded-none bg-white focus:outline-none focus:ring-0 focus:border-black px-3 py-2 w-full;
+    box-shadow: 2px 2px 0px 0px #000000;
+  }
+
+  .nb-badge {
+    @apply bg-yellow-400 border-2 border-black font-bold text-black rounded-none px-2 py-0.5 text-xs uppercase;
+  }
+
+  .nb-badge-pink {
+    @apply bg-pink-400 border-2 border-black font-bold text-black rounded-none px-2 py-0.5 text-xs uppercase;
+  }
+
+  .nb-header {
+    @apply bg-yellow-400 border-b-4 border-black;
+  }
+
+  .nb-sidebar {
+    @apply bg-white border-r-4 border-black;
+  }
+
+  .nb-table th {
+    @apply bg-yellow-400 border-2 border-black font-black text-left px-4 py-2 uppercase;
+  }
+
+  .nb-table td {
+    @apply border-2 border-black px-4 py-2;
+  }
+
+  .nb-table tr:nth-child(even) {
+    @apply bg-yellow-50;
+  }
+}
