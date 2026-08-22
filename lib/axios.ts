@@ -13,13 +13,26 @@ function getApiBaseUrl() {
   return "http://localhost:8000/api";
 }
 
+export const TOKEN_KEY = "fmc_token";
+
 export const api = axios.create({
   baseURL: getApiBaseUrl(),
-  withCredentials: true,
+  withCredentials: false,
   headers: {
     Accept: "application/json",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+  },
+});
+
+// Attach Bearer token from localStorage on every request
+api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
+  return config;
 });
 
 api.interceptors.response.use(
