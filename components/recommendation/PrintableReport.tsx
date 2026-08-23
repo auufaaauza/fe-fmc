@@ -213,16 +213,26 @@ export function PrintableReport({
             </tbody>
           </table>
 
-          {topResults[0]?.program?.career_paths && topResults[0].program.career_paths.length > 0 && (
-            <div className="border border-black p-2 text-xs bg-gray-50">
-              <span className="font-bold text-black">
-                Prospek Karir Rekomendasi Utama ({topResults[0].program.name}):
-              </span>{" "}
-              <span className="text-gray-800">
-                {topResults[0].program.career_paths.join(", ")}
-              </span>
+          {/* Prospek Karir Top 5 Rekomendasi */}
+          <div className="border border-black p-2.5 text-xs bg-gray-50/70">
+            <h4 className="font-bold text-[11px] uppercase mb-1.5 text-black">
+              Prospek Karir 5 Program Studi Teratas:
+            </h4>
+            <div className="grid grid-cols-1 gap-1.5 text-[11px]">
+              {topResults.map((res) => (
+                <div key={res.id} className="flex items-baseline gap-2">
+                  <span className="font-bold text-black shrink-0 w-36 truncate">
+                    #{res.rank_position} {res.program.name}:
+                  </span>
+                  <span className="text-gray-800 leading-snug">
+                    {res.program.career_paths && res.program.career_paths.length > 0
+                      ? res.program.career_paths.join(" • ")
+                      : "Bidang industri profesional, konsultan, analis, dan akademisi terkait."}
+                  </span>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
         </div>
 
         {/* ── 3. NILAI RAPOR YANG SUDAH DIINPUT ── */}
