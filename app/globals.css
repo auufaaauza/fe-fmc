@@ -222,8 +222,20 @@ body::before {
   .nb-header,
   header,
   aside,
-  nav {
+  nav,
+  main,
+  button,
+  .print\:hidden {
     display: none !important;
+  }
+  .fmc-printable-sheet {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
   }
   .break-inside-avoid {
     break-inside: avoid !important;

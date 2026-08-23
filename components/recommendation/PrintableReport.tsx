@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Printer } from "lucide-react";
 import { api } from "@/lib/axios";
 import type { Recommendation, StudentScore, User } from "@/types";
@@ -18,6 +19,11 @@ export function PrintableReport({
   scores: initialScores,
 }: PrintableReportProps) {
   const [scores, setScores] = useState<StudentScore[]>(initialScores || []);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isValidated = Boolean(
     recommendation?.is_validated ||
@@ -102,10 +108,11 @@ export function PrintableReport({
         <span>Cetak Laporan PDF</span>
       </Button>
 
-      {/* ── LEMBAR LAPORAN RESMI A4 (Hanya tampil saat dicetak) ── */}
-      <div className="hidden print:block print:w-full print:max-w-4xl print:mx-auto print:p-6 print:text-black font-sans bg-white">
-        {/* Header Dokumen (Tanpa KOP Surat) */}
-        <div className="text-center pb-3 mb-4 border-b-2 border-black">
+      {/* ── LEMBAR LAPORAN RESMI A4 (Portaled ke document.body agar tidak terpengaruh parent print:hidden) ── */}
+      {mounted && typeof document !== "undefined" && createPortal(
+        <div className="fmc-printable-sheet hidden print:block print:w-full print:max-w-4xl print:mx-auto print:p-6 print:text-black font-sans bg-white">
+          {/* Header Dokumen (Tanpa KOP Surat) */}
+          <div className="text-center pb-3 mb-4 border-b-2 border-black">
           <h2 className="font-bold text-base uppercase tracking-tight text-black">
             Laporan Hasil Rekomendasi Pemilihan Program Studi & Karir
           </h2>
@@ -286,7 +293,9 @@ export function PrintableReport({
             <p className="text-gray-600">NIP. ........................................</p>
           </div>
         </div>
-      </div>
-    </>
+      </div>,
+      document.body
+    )}
+  </>
   );
 }
