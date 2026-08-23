@@ -16,7 +16,8 @@ export function DialogContent({ className, children, ...props }: DialogPrimitive
       <DialogPrimitive.Content
         className={cn(
           "fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2",
-          "nb-card p-6 shadow-2xl",
+          "max-h-[88vh] overflow-y-auto overscroll-contain",
+          "nb-card p-5 sm:p-6 shadow-2xl",
           "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2",
           className
         )}
