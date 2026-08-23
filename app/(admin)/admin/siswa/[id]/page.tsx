@@ -110,7 +110,7 @@ export default function AdminStudentDetailPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {recommendation && <PrintableReport student={student} recommendation={recommendation} />}
+          {recommendation && <PrintableReport student={student} recommendation={recommendation} scores={scores} />}
           <Button asChild variant="plain" size="sm" className="flex items-center gap-1.5">
             <Link href="/admin/siswa"><ArrowLeft className="h-4 w-4" /> Kembali</Link>
           </Button>
@@ -506,9 +506,6 @@ export default function AdminStudentDetailPage() {
           )}
         </div>
       )}
-
-      {/* Printable */}
-      <PrintableReport student={student} recommendation={recommendation} />
     </div>
   );
 }

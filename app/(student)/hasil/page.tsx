@@ -18,7 +18,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { api } from "@/lib/axios";
-import type { Recommendation, RecommendationResult } from "@/types";
+import type { Recommendation, RecommendationResult, StudentScore } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
@@ -42,6 +42,7 @@ function isSaintek(faculty?: string | null): boolean {
 
 export default function HasilPage() {
   const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
+  const [scores, setScores] = useState<StudentScore[]>([]);
   const [loading, setLoading] = useState(true);
   const [calculating, setCalculating] = useState(false);
   const [rumpun, setRumpun] = useState<RumpunFilter>("all");
@@ -65,8 +66,16 @@ export default function HasilPage() {
   useEffect(() => {
     async function loadLatest() {
       try {
-        const response = await api.get("/my-recommendations/latest");
-        setRecommendation(response.data.data);
+        const [recRes, scoresRes] = await Promise.allSettled([
+          api.get("/my-recommendations/latest"),
+          api.get("/my-scores"),
+        ]);
+        if (recRes.status === "fulfilled") {
+          setRecommendation(recRes.value.data.data);
+        }
+        if (scoresRes.status === "fulfilled") {
+          setScores(scoresRes.value.data.data || []);
+        }
       } catch (error: any) {
         toast({ title: "Gagal memuat hasil", description: error.appMessage, type: "error" });
       } finally {
@@ -129,7 +138,7 @@ export default function HasilPage() {
 
         {isValidated && recommendation && (
           <div className="flex flex-wrap items-center gap-2">
-            <PrintableReport student={user} recommendation={recommendation} />
+            <PrintableReport student={user} recommendation={recommendation} scores={scores} />
             <Button
               variant="glass"
               onClick={calculate}
@@ -330,9 +339,6 @@ export default function HasilPage() {
               ))
             )}
           </div>
-
-          {/* Printable Report Component (Only rendered when validated) */}
-          <PrintableReport student={user} recommendation={recommendation} />
         </div>
       )}
     </div>

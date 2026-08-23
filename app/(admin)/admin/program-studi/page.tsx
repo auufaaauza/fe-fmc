@@ -11,6 +11,7 @@ import {
   Plus,
   Search,
   Sliders,
+  Sparkles,
   TreePine,
   Users2,
   Wrench,
@@ -103,13 +104,13 @@ const rumpunMapping: Record<string, RumpunType> = {
   "Sains Perkopian": "ILMU_TERAPAN",
 };
 
-const rumpunTabs: { value: RumpunType; label: string; icon: any; colorClass: string }[] = [
-  { value: "ALL", label: "Semua Rumpun", icon: Layers, colorClass: "bg-yellow-300" },
-  { value: "HUMANIORA", label: "Humaniora", icon: Landmark, colorClass: "bg-purple-300" },
-  { value: "ILMU_SOSIAL", label: "Ilmu Sosial", icon: Users2, colorClass: "bg-orange-300" },
-  { value: "ILMU_ALAM", label: "Ilmu Alam", icon: TreePine, colorClass: "bg-emerald-300" },
-  { value: "ILMU_FORMAL", label: "Ilmu Formal", icon: Binary, colorClass: "bg-blue-300" },
-  { value: "ILMU_TERAPAN", label: "Ilmu Terapan", icon: Wrench, colorClass: "bg-pink-300" },
+const rumpunTabs: { value: RumpunType; label: string; icon: any }[] = [
+  { value: "ALL", label: "Semua Rumpun", icon: Layers },
+  { value: "HUMANIORA", label: "Humaniora", icon: Landmark },
+  { value: "ILMU_SOSIAL", label: "Ilmu Sosial", icon: Users2 },
+  { value: "ILMU_ALAM", label: "Ilmu Alam", icon: TreePine },
+  { value: "ILMU_FORMAL", label: "Ilmu Formal", icon: Binary },
+  { value: "ILMU_TERAPAN", label: "Ilmu Terapan", icon: Wrench },
 ];
 
 function getRumpun(programName: string): RumpunType {
@@ -119,16 +120,16 @@ function getRumpun(programName: string): RumpunType {
 function getRumpunDisplay(rumpun: RumpunType): { label: string; badgeClass: string } {
   switch (rumpun) {
     case "HUMANIORA":
-      return { label: "Humaniora", badgeClass: "bg-purple-200 text-purple-950" };
+      return { label: "Humaniora", badgeClass: "bg-purple-50 text-purple-700 border-purple-200" };
     case "ILMU_SOSIAL":
-      return { label: "Ilmu Sosial", badgeClass: "bg-orange-200 text-orange-950" };
+      return { label: "Ilmu Sosial", badgeClass: "bg-amber-50 text-amber-700 border-amber-200" };
     case "ILMU_ALAM":
-      return { label: "Ilmu Alam", badgeClass: "bg-emerald-200 text-emerald-950" };
+      return { label: "Ilmu Alam", badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200" };
     case "ILMU_FORMAL":
-      return { label: "Ilmu Formal", badgeClass: "bg-blue-200 text-blue-950" };
+      return { label: "Ilmu Formal", badgeClass: "bg-blue-50 text-blue-700 border-blue-200" };
     case "ILMU_TERAPAN":
     default:
-      return { label: "Ilmu Terapan", badgeClass: "bg-pink-200 text-pink-950" };
+      return { label: "Ilmu Terapan", badgeClass: "bg-indigo-50 text-indigo-700 border-indigo-200" };
   }
 }
 
@@ -311,45 +312,47 @@ export default function ProgramStudiPage() {
         action={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button onClick={startCreate} className="flex items-center gap-2">
+              <Button onClick={startCreate} className="flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs text-xs sm:text-sm">
                 <Plus className="h-4 w-4" />
                 Tambah Program
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl max-w-xl">
               <DialogHeader>
-                <DialogTitle>
+                <DialogTitle className="text-lg font-semibold text-slate-900">
                   {editing ? "Edit Program Studi & Bobot SAW" : "Tambah Program Studi Baru"}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={saveProgram} className="space-y-3.5">
+              <form onSubmit={saveProgram} className="space-y-4 pt-2">
                 <div>
-                  <label className="mb-1 block text-xs font-black">Nama Program Studi</label>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-700">Nama Program Studi</label>
                   <Input
                     placeholder="Contoh: Ilmu Komputer"
                     value={form.name}
                     onChange={(event) =>
                       setForm({ ...form, name: event.target.value })
                     }
+                    className="rounded-xl border-slate-200 text-xs sm:text-sm"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-black">Fakultas / Rumpun</label>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-700">Fakultas / Rumpun</label>
                   <Input
                     placeholder="Contoh: Fakultas Ilmu Komputer"
                     value={form.faculty}
                     onChange={(event) =>
                       setForm({ ...form, faculty: event.target.value })
                     }
+                    className="rounded-xl border-slate-200 text-xs sm:text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-black">Deskripsi</label>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-700">Deskripsi</label>
                   <textarea
-                    className="nb-input min-h-20 text-xs sm:text-sm"
+                    className="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 min-h-20"
                     placeholder="Deskripsi singkat keilmuan dan pembelajaran..."
                     value={form.description}
                     onChange={(event) =>
@@ -359,7 +362,7 @@ export default function ProgramStudiPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-black">
+                  <label className="mb-1.5 block text-xs font-medium text-slate-700">
                     Prospek Karir (Pisahkan dengan koma)
                   </label>
                   <Input
@@ -368,22 +371,24 @@ export default function ProgramStudiPage() {
                     onChange={(event) =>
                       setForm({ ...form, career_paths: event.target.value })
                     }
+                    className="rounded-xl border-slate-200 text-xs sm:text-sm"
                   />
                 </div>
 
                 {/* Criteria SAW Config */}
-                <div className="border-2 border-black bg-yellow-50 p-3 space-y-3">
-                  <span className="text-xs font-black uppercase text-yellow-950 flex items-center gap-1.5">
-                    <Sliders className="h-4 w-4 text-yellow-800" /> Konfigurasi Kriteria SAW
-                  </span>
+                <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-3.5">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-950">
+                    <Sliders className="h-4 w-4 text-indigo-600" />
+                    <span>Konfigurasi Kriteria SAW</span>
+                  </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="mb-1 block text-[11px] font-black">Mapel Utama (C1)</label>
+                      <label className="mb-1 block text-[11px] font-medium text-slate-600">Mapel Utama (C1)</label>
                       <select
                         value={form.primary_subject_id}
                         onChange={(e) => setForm({ ...form, primary_subject_id: e.target.value })}
-                        className="nb-input text-xs"
+                        className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                       >
                         {subjects.map((s) => (
                           <option key={s.id} value={s.id}>
@@ -393,23 +398,24 @@ export default function ProgramStudiPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="mb-1 block text-[11px] font-black">Bobot C1 (0.40)</label>
+                      <label className="mb-1 block text-[11px] font-medium text-slate-600">Bobot C1 (0.40)</label>
                       <Input
                         type="number"
                         step="0.01"
                         value={form.primary_weight}
                         onChange={(e) => setForm({ ...form, primary_weight: e.target.value })}
+                        className="rounded-xl border-slate-200 text-xs"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="mb-1 block text-[11px] font-black">Mapel Pendukung (C2)</label>
+                      <label className="mb-1 block text-[11px] font-medium text-slate-600">Mapel Pendukung (C2)</label>
                       <select
                         value={form.secondary_subject_id}
                         onChange={(e) => setForm({ ...form, secondary_subject_id: e.target.value })}
-                        className="nb-input text-xs"
+                        className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                       >
                         <option value="">-- Tidak Ada --</option>
                         {subjects.map((s) => (
@@ -420,23 +426,24 @@ export default function ProgramStudiPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="mb-1 block text-[11px] font-black">Bobot C2 (0.30)</label>
+                      <label className="mb-1 block text-[11px] font-medium text-slate-600">Bobot C2 (0.30)</label>
                       <Input
                         type="number"
                         step="0.01"
                         value={form.secondary_weight}
                         onChange={(e) => setForm({ ...form, secondary_weight: e.target.value })}
+                        className="rounded-xl border-slate-200 text-xs"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="mb-1 block text-[11px] font-black">Kategori Minat (C3)</label>
+                      <label className="mb-1 block text-[11px] font-medium text-slate-600">Kategori Minat (C3)</label>
                       <select
                         value={form.interest_category_id}
                         onChange={(e) => setForm({ ...form, interest_category_id: e.target.value })}
-                        className="nb-input text-xs"
+                        className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                       >
                         {categories.map((c) => (
                           <option key={c.id} value={c.id}>
@@ -446,18 +453,19 @@ export default function ProgramStudiPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="mb-1 block text-[11px] font-black">Bobot C3 (0.30)</label>
+                      <label className="mb-1 block text-[11px] font-medium text-slate-600">Bobot C3 (0.30)</label>
                       <Input
                         type="number"
                         step="0.01"
                         value={form.interest_weight}
                         onChange={(e) => setForm({ ...form, interest_weight: e.target.value })}
+                        className="rounded-xl border-slate-200 text-xs"
                       />
                     </div>
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white">
                   Simpan Program Studi
                 </Button>
               </form>
@@ -468,7 +476,7 @@ export default function ProgramStudiPage() {
 
       {/* ── FILTER RUMPUN ILMU TABS & PENCARIAN ── */}
       <div className="space-y-3">
-        {/* Rumpun Tabs with Lucide Icons */}
+        {/* Rumpun Tabs */}
         <div className="flex flex-wrap gap-2 overflow-x-auto pb-1">
           {rumpunTabs.map((tab) => {
             const isSelected = selectedRumpun === tab.value;
@@ -479,15 +487,19 @@ export default function ProgramStudiPage() {
                 key={tab.value}
                 type="button"
                 onClick={() => setSelectedRumpun(tab.value)}
-                className={`flex items-center gap-1.5 border-2 border-black px-3.5 py-2 text-xs sm:text-sm font-black transition-all shadow-[2px_2px_0px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0 ${
+                className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs sm:text-sm font-medium transition-all shrink-0 ${
                   isSelected
-                    ? `${tab.colorClass} scale-[1.02]`
-                    : "bg-white hover:bg-gray-100"
+                    ? "bg-indigo-600 text-white shadow-xs font-semibold"
+                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                <Icon className="h-3.5 w-3.5 shrink-0" />
                 <span>{tab.label}</span>
-                <span className="rounded-full bg-black px-1.5 py-0.2 text-[10px] font-bold text-white">
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                    isSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                  }`}
+                >
                   {count}
                 </span>
               </button>
@@ -496,29 +508,29 @@ export default function ProgramStudiPage() {
         </div>
 
         {/* Search Bar & Result Summary */}
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pt-1">
           <div className="relative flex-1 max-w-md">
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari nama program studi, fakultas, atau kata kunci..."
-              className="pl-9 text-xs sm:text-sm"
+              className="pl-9 text-xs sm:text-sm rounded-xl border-slate-200"
             />
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
           </div>
 
-          <div className="text-xs font-black text-gray-600">
-            Menampilkan <strong>{filteredPrograms.length}</strong> dari {programs.length} program studi
+          <div className="text-xs text-slate-500 font-medium">
+            Menampilkan <strong className="text-slate-800">{filteredPrograms.length}</strong> dari {programs.length} program studi
           </div>
         </div>
       </div>
 
       {/* ── LIST OF STUDY PROGRAMS ── */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-3.5">
         {filteredPrograms.length === 0 ? (
-          <div className="nb-card p-10 text-center bg-white">
-            <GraduationCap className="mx-auto h-10 w-10 text-gray-400 mb-2" />
-            <p className="font-black text-gray-600">
+          <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-xs">
+            <GraduationCap className="mx-auto h-10 w-10 text-slate-300 mb-2" />
+            <p className="font-medium text-slate-500 text-sm">
               Tidak ada program studi yang cocok dengan filter rumpun atau kata kunci pencarian.
             </p>
           </div>
@@ -530,59 +542,60 @@ export default function ProgramStudiPage() {
             return (
               <article
                 key={program.id}
-                className="nb-card bg-white p-5 hover:bg-yellow-50/40 transition-colors"
+                className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs hover:border-indigo-200 hover:shadow-sm transition-all duration-200"
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div className="space-y-2 flex-1">
+                  <div className="space-y-2.5 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center border border-black bg-yellow-300 font-mono text-xs font-black">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700 font-semibold text-xs border border-indigo-100/80">
                         {idx + 1}
                       </span>
-                      <h2 className="text-lg sm:text-xl font-black text-black">
+                      <h2 className="text-base sm:text-lg font-semibold text-slate-900">
                         {program.name}
                       </h2>
-                      <span className={`nb-badge text-[11px] ${rumpunInfo.badgeClass}`}>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${rumpunInfo.badgeClass}`}>
                         {rumpunInfo.label}
                       </span>
                       {program.faculty && (
-                        <span className="nb-badge bg-gray-100 text-[11px] text-gray-700">
+                        <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
                           {program.faculty}
                         </span>
                       )}
                     </div>
 
-                    <p className="text-xs sm:text-sm font-medium text-gray-800 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
                       {program.description}
                     </p>
 
                     {/* Prospek Karir */}
                     {program.career_paths && program.career_paths.length > 0 && (
-                      <div className="text-xs">
-                        <strong className="font-black text-gray-900">Prospek Karir: </strong>
-                        <span className="font-medium text-gray-700">
-                          {program.career_paths.join(" / ")}
+                      <div className="text-xs rounded-xl bg-slate-50 border border-slate-100 p-2.5">
+                        <strong className="font-medium text-slate-800">Prospek Karir: </strong>
+                        <span className="text-slate-600">
+                          {program.career_paths.join(" • ")}
                         </span>
                       </div>
                     )}
 
                     {/* Kriteria & Bobot SAW */}
-                    <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-xs font-bold text-gray-900">
-                      <span className="bg-yellow-100 border border-black px-2 py-0.5">
-                        C1: {program.criteria?.primary_subject?.name || "-"} (W: {program.criteria?.primary_weight})
+                    <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-indigo-50/80 border border-indigo-100 px-2.5 py-1 text-indigo-900 font-medium">
+                        C1 Utama: <strong>{program.criteria?.primary_subject?.name || "-"}</strong> ({program.criteria?.primary_weight})
                       </span>
-                      <span className="bg-blue-100 border border-black px-2 py-0.5">
-                        C2: {program.criteria?.secondary_subject?.name || "Tidak ada"} (W: {program.criteria?.secondary_weight ?? 0})
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-blue-50/80 border border-blue-100 px-2.5 py-1 text-blue-900 font-medium">
+                        C2 Pendukung: <strong>{program.criteria?.secondary_subject?.name || "Tidak ada"}</strong> ({program.criteria?.secondary_weight ?? 0})
                       </span>
-                      <span className="bg-purple-100 border border-black px-2 py-0.5">
-                        C3: {program.criteria?.interest_category?.name || "-"} (W: {program.criteria?.interest_weight})
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-purple-50/80 border border-purple-100 px-2.5 py-1 text-purple-900 font-medium">
+                        C3 Minat: <strong>{program.criteria?.interest_category?.name || "-"}</strong> ({program.criteria?.interest_weight})
                       </span>
                     </div>
                   </div>
 
                   <Button
-                    variant="plain"
+                    variant="glass"
+                    size="sm"
                     onClick={() => startEdit(program)}
-                    className="shrink-0 flex items-center gap-1 text-xs"
+                    className="shrink-0 flex items-center gap-1.5 text-xs rounded-xl self-start"
                   >
                     <Edit className="h-3.5 w-3.5" /> Edit
                   </Button>
