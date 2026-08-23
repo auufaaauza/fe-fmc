@@ -207,29 +207,34 @@ body::before {
   background: #94A3B8;
 }
 
+@media screen {
+  #printable-report-root {
+    display: none !important;
+  }
+}
+
 @media print {
   @page {
     size: A4 portrait;
-    margin: 12mm 15mm 15mm 15mm;
+    margin: 10mm 12mm 12mm 12mm;
   }
+
   body {
     background: #ffffff !important;
     color: #000000 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  .nb-sidebar,
-  .nb-header,
-  header,
-  aside,
-  nav,
-  main,
-  button,
-  .print\:hidden {
+
+  /* Sembunyikan seluruh UI web utama saat dicetak */
+  body > *:not(#printable-report-root) {
     display: none !important;
   }
-  .fmc-printable-sheet {
+
+  /* Tampilkan lembar laporan secara penuh */
+  #printable-report-root {
     display: block !important;
+    position: relative !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 auto !important;
@@ -237,6 +242,7 @@ body::before {
     background: #ffffff !important;
     color: #000000 !important;
   }
+
   .break-inside-avoid {
     break-inside: avoid !important;
     page-break-inside: avoid !important;

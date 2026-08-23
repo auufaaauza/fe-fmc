@@ -108,9 +108,12 @@ export function PrintableReport({
         <span>Cetak Laporan PDF</span>
       </Button>
 
-      {/* ── LEMBAR LAPORAN RESMI A4 (Portaled ke document.body agar tidak terpengaruh parent print:hidden) ── */}
+      {/* ── LEMBAR LAPORAN RESMI A4 (Portaled ke document.body) ── */}
       {mounted && typeof document !== "undefined" && createPortal(
-        <div className="fmc-printable-sheet hidden print:block print:w-full print:max-w-4xl print:mx-auto print:p-6 print:text-black font-sans bg-white">
+        <div
+          id="printable-report-root"
+          className="w-full max-w-4xl mx-auto p-4 text-black font-sans bg-white"
+        >
           {/* Header Dokumen (Tanpa KOP Surat) */}
           <div className="text-center pb-3 mb-4 border-b-2 border-black">
           <h2 className="font-bold text-base uppercase tracking-tight text-black">
