@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { useAuth } from "@/hooks/useAuth";
+import { useFloatingBarVisibility } from "@/hooks/useFloatingBarVisibility";
 
 interface SemesterScoreItem {
   sem1: string;
@@ -24,6 +25,7 @@ export default function RaporPage() {
   const [saving, setSaving] = useState(false);
   const { user, refreshMe } = useAuth();
   const { toast } = useToast();
+  const showFloatingBar = useFloatingBarVisibility();
 
   useEffect(() => {
     async function loadData() {
@@ -158,7 +160,7 @@ export default function RaporPage() {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 max-w-5xl mx-auto pb-16">
+    <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 max-w-5xl mx-auto pb-28 sm:pb-32">
       {/* ── KOP & PETUNJUK FORMAT ANGKET BK ── */}
       <div className="nb-card p-4 sm:p-6 bg-white border border-slate-200 shadow-sm rounded-xl">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pb-4 border-b border-slate-100">
@@ -504,8 +506,14 @@ export default function RaporPage() {
         </div>
       )}
 
-      {/* ── STICKY BOTTOM SAVE BAR ── */}
-      <div className="fixed bottom-4 left-4 right-4 md:left-72 md:right-8 z-30 flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white/85 backdrop-blur-md border border-slate-200/90 shadow-lg transition-all">
+      {/* ── STICKY BOTTOM SAVE BAR (Auto-hide on scroll down) ── */}
+      <div
+        className={`fixed bottom-4 left-4 right-4 md:left-72 md:right-8 z-30 flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white/90 backdrop-blur-md border border-slate-200/90 shadow-lg transition-all duration-300 ease-in-out ${
+          showFloatingBar
+            ? "translate-y-0 opacity-100 pointer-events-auto"
+            : "translate-y-24 opacity-0 pointer-events-none"
+        }`}
+      >
         <div className="flex items-center gap-3">
           <div className="h-9 w-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center font-bold text-indigo-600 shrink-0 text-sm">
             {filledSubjectCount}
