@@ -3,18 +3,21 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  CheckCircle2,
   AlertCircle,
+  BarChart2,
+  CheckCircle2,
+  Clock,
   Download,
   Edit,
   Eye,
   FileSpreadsheet,
+  FileText,
+  Filter,
   KeyRound,
   Layers,
   Loader2,
   Plus,
   ShieldCheck,
-  Clock,
   Trash2,
   Upload,
   X,
@@ -39,10 +42,19 @@ const emptyForm = { name: "", nisn: "", class: "", password: "", is_active: true
 interface ImportResultRow { nisn: string; name: string; action: string; scores: number; }
 interface ImportSummary { total_processed: number; total_errors: number; }
 
+/** Derive sub-class label from full class name, e.g. "XII IPA 1" → "IPA" */
+function parseSubClass(className: string): string {
+  const parts = className.trim().split(/\s+/);
+  // Typically: "XII", "IPA", "1" — sub-class is part index 1 if it exists
+  if (parts.length >= 2) return parts[1].toUpperCase();
+  return "";
+}
+
 export default function AdminSiswaPage() {
   const [students, setStudents] = useState<StudentListItem[]>([]);
   const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
+  const [selectedSubClass, setSelectedSubClass] = useState<string>("");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -50,6 +62,7 @@ export default function AdminSiswaPage() {
   const [form, setForm] = useState(emptyForm);
   const { toast } = useToast();
 
+  // Import state
   const [importOpen, setImportOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
@@ -57,16 +70,35 @@ export default function AdminSiswaPage() {
   const [importResults, setImportResults] = useState<ImportResultRow[]>([]);
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
-  const [exporting, setExporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Export modal state
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportType, setExportType] = useState<"students" | "full">("students");
+  const [exportClass, setExportClass] = useState<string>("");
+  const [exporting, setExporting] = useState(false);
+
+  // ── Derived: unique sub-classes from loaded classes ──────────────────────────
+  const subClassOptions = useMemo(() => {
+    const set = new Set<string>();
+    classes.forEach((c) => {
+      const sub = parseSubClass(c.name);
+      if (sub) set.add(sub);
+    });
+    return Array.from(set).sort();
+  }, [classes]);
+
+  // ── Filtered list ─────────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     return students.filter((s) => {
       const matchesSearch = `${s.nisn} ${s.name} ${s.class ?? ""}`.toLowerCase().includes(search.toLowerCase());
       const matchesClass = selectedClass ? s.class === selectedClass : true;
-      return matchesSearch && matchesClass;
+      const matchesSubClass = selectedSubClass
+        ? (s.class ? parseSubClass(s.class) === selectedSubClass : false)
+        : true;
+      return matchesSearch && matchesClass && matchesSubClass;
     });
-  }, [students, search, selectedClass]);
+  }, [students, search, selectedClass, selectedSubClass]);
 
   async function loadData() {
     try {
@@ -84,6 +116,12 @@ export default function AdminSiswaPage() {
   }
 
   useEffect(() => { loadData(); }, []);
+
+  // Reset sub-class filter if selected class changes
+  function handleClassChange(val: string) {
+    setSelectedClass(val);
+    setSelectedSubClass("");
+  }
 
   function startCreate() { setEditing(null); setForm(emptyForm); setOpen(true); }
   function startEdit(student: StudentListItem) {
@@ -130,19 +168,28 @@ export default function AdminSiswaPage() {
     }
   }
 
+  // ── Export handlers ───────────────────────────────────────────────────────────
   async function handleExport() {
     setExporting(true);
     try {
-      const response = await api.get("/admin/students/export", { responseType: "blob" });
+      const params: Record<string, string> = {};
+      if (exportClass) params.class = exportClass;
+
+      const endpoint = exportType === "full"
+        ? "/admin/students/export-report"
+        : "/admin/students/export";
+
+      const response = await api.get(endpoint, { responseType: "blob", params });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
       const cd = response.headers["content-disposition"] || "";
-      const match = cd.match(/filename="?(.+)"?/);
-      link.download = match ? match[1] : "data-siswa-nilai.xlsx";
+      const match = cd.match(/filename="?(.+?)"?($|;)/);
+      link.download = match ? match[1] : exportType === "full" ? "rekap-siswa.xlsx" : "data-siswa-nilai.xlsx";
       document.body.appendChild(link); link.click(); link.remove();
       window.URL.revokeObjectURL(url);
       toast({ title: "Export Berhasil", description: "File Excel berhasil diunduh.", type: "success" });
+      setExportOpen(false);
     } catch (error: any) {
       toast({ title: "Gagal export", description: error.appMessage || "Terjadi kesalahan.", type: "error" });
     } finally { setExporting(false); }
@@ -162,6 +209,12 @@ export default function AdminSiswaPage() {
   function openImportModal() {
     setImportFile(null); setImportDone(false); setImportResults([]);
     setImportErrors([]); setImportSummary(null); setImportOpen(true);
+  }
+
+  function openExportModal() {
+    setExportType("students");
+    setExportClass("");
+    setExportOpen(true);
   }
 
   async function handleImport() {
@@ -204,10 +257,14 @@ export default function AdminSiswaPage() {
               </Button>
             </Link>
 
-            <Button variant="glass" onClick={handleExport} disabled={exporting} id="btn-export-siswa"
-              className="flex items-center gap-2 text-emerald-700 border-emerald-200">
-              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-              {exporting ? "Mengunduh..." : "Export Excel"}
+            {/* Export Modal Trigger */}
+            <Button
+              variant="glass"
+              onClick={openExportModal}
+              id="btn-export-siswa"
+              className="flex items-center gap-2 text-emerald-700 border-emerald-200"
+            >
+              <Download className="h-4 w-4" /> Export
             </Button>
 
             <Button variant="glass" onClick={openImportModal} id="btn-import-siswa"
@@ -265,22 +322,84 @@ export default function AdminSiswaPage() {
         }
       />
 
-      {/* Filter & Search */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {/* ── Filter & Search ── */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+        {/* Filter Kelas */}
         <div>
           <label className="mb-1.5 block text-xs font-medium text-slate-500 uppercase tracking-wide">Filter Kelas</label>
-          <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="nb-input">
-            <option value="">-- Semua Kelas ({students.length} Siswa) --</option>
+          <select
+            value={selectedClass}
+            onChange={(e) => handleClassChange(e.target.value)}
+            className="nb-input"
+            id="filter-kelas"
+          >
+            <option value="">-- Semua Kelas ({students.length}) --</option>
             {classes.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
           </select>
         </div>
+
+        {/* Filter Sub-Kelas / Jurusan */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-slate-500 uppercase tracking-wide">
+            <span className="flex items-center gap-1.5"><Filter className="h-3 w-3" /> Sub Kelas / Jurusan</span>
+          </label>
+          <select
+            value={selectedSubClass}
+            onChange={(e) => { setSelectedSubClass(e.target.value); setSelectedClass(""); }}
+            className="nb-input"
+            id="filter-sub-kelas"
+          >
+            <option value="">-- Semua Jurusan --</option>
+            {subClassOptions.map((sub) => (
+              <option key={sub} value={sub}>{sub}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Search */}
         <div className="sm:col-span-2">
           <label className="mb-1.5 block text-xs font-medium text-slate-500 uppercase tracking-wide">Pencarian Siswa</label>
-          <Input placeholder="Cari berdasarkan NIS, nama, atau kelas..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input
+            placeholder="Cari berdasarkan NIS, nama, atau kelas..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
       </div>
 
-      {/* Table */}
+      {/* Active filter chips */}
+      {(selectedClass || selectedSubClass || search) && (
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-slate-500 font-medium">Filter aktif:</span>
+          {selectedClass && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-1 font-medium text-indigo-700">
+              Kelas: {selectedClass}
+              <button onClick={() => setSelectedClass("")} className="hover:text-indigo-900"><X className="h-3 w-3" /></button>
+            </span>
+          )}
+          {selectedSubClass && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2.5 py-1 font-medium text-violet-700">
+              Jurusan: {selectedSubClass}
+              <button onClick={() => setSelectedSubClass("")} className="hover:text-violet-900"><X className="h-3 w-3" /></button>
+            </span>
+          )}
+          {search && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">
+              Cari: "{search}"
+              <button onClick={() => setSearch("")} className="hover:text-slate-800"><X className="h-3 w-3" /></button>
+            </span>
+          )}
+          <span className="text-slate-400">· {filtered.length} siswa ditemukan</span>
+          <button
+            onClick={() => { setSelectedClass(""); setSelectedSubClass(""); setSearch(""); }}
+            className="text-red-500 hover:text-red-700 font-medium"
+          >
+            Reset semua
+          </button>
+        </div>
+      )}
+
+      {/* ── Table ── */}
       <div className="nb-card overflow-x-auto">
         <table className="nb-table w-full">
           <thead>
@@ -368,7 +487,110 @@ export default function AdminSiswaPage() {
         </table>
       </div>
 
-      {/* Import Modal */}
+      {/* ── Export Modal ── */}
+      <Dialog open={exportOpen} onOpenChange={setExportOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Download className="h-5 w-5 text-emerald-500" />
+              Export Data Siswa
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-5">
+            {/* Tipe Export */}
+            <div>
+              <p className="mb-2.5 text-sm font-medium text-slate-700">Pilih jenis laporan:</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setExportType("students")}
+                  id="export-type-students"
+                  className={`rounded-xl border-2 p-4 text-left transition-all ${
+                    exportType === "students"
+                      ? "border-emerald-400 bg-emerald-50"
+                      : "border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  <FileSpreadsheet className={`h-6 w-6 mb-2 ${exportType === "students" ? "text-emerald-600" : "text-slate-400"}`} />
+                  <p className={`text-sm font-semibold ${exportType === "students" ? "text-emerald-800" : "text-slate-700"}`}>
+                    Data Siswa & Nilai
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    1 sheet: NISN, Nama, Kelas, Nilai per mapel
+                  </p>
+                </button>
+
+                <button
+                  onClick={() => setExportType("full")}
+                  id="export-type-full"
+                  className={`rounded-xl border-2 p-4 text-left transition-all ${
+                    exportType === "full"
+                      ? "border-indigo-400 bg-indigo-50"
+                      : "border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  <FileText className={`h-6 w-6 mb-2 ${exportType === "full" ? "text-indigo-600" : "text-slate-400"}`} />
+                  <p className={`text-sm font-semibold ${exportType === "full" ? "text-indigo-800" : "text-slate-700"}`}>
+                    Rekap Keseluruhan
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    4 sheet: Ringkasan, Nilai, Rekomendasi, RIASEC
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            {/* Detail isi rekap */}
+            {exportType === "full" && (
+              <div className="rounded-xl bg-indigo-50 border border-indigo-200 p-3 text-xs text-indigo-800">
+                <p className="font-semibold mb-1.5 flex items-center gap-1">
+                  <BarChart2 className="h-3.5 w-3.5" /> Isi Rekap Keseluruhan:
+                </p>
+                <ul className="space-y-0.5 pl-3 list-disc">
+                  <li><b>Sheet 1 — Ringkasan:</b> Statistik keseluruhan (total siswa, % rapor, kuesioner, rekomendasi)</li>
+                  <li><b>Sheet 2 — Data Siswa & Nilai:</b> Data lengkap + nilai per mapel</li>
+                  <li><b>Sheet 3 — Hasil Rekomendasi:</b> Jurusan #1, #2, #3 + skor SAW per siswa</li>
+                  <li><b>Sheet 4 — Distribusi RIASEC:</b> Akumulasi skor minat per kategori</li>
+                </ul>
+              </div>
+            )}
+
+            {/* Filter Kelas (opsional) */}
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Filter per kelas <span className="text-slate-400 font-normal">(opsional — kosongkan untuk semua kelas)</span>
+              </label>
+              <select
+                value={exportClass}
+                onChange={(e) => setExportClass(e.target.value)}
+                className="nb-input"
+                id="export-filter-kelas"
+              >
+                <option value="">-- Semua Kelas --</option>
+                {classes.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
+              </select>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex gap-2 pt-1">
+              <Button
+                className="flex-1 flex items-center justify-center gap-2"
+                onClick={handleExport}
+                disabled={exporting}
+                id="btn-download-export"
+              >
+                {exporting
+                  ? <><Loader2 className="h-4 w-4 animate-spin" /> Mengunduh...</>
+                  : <><Download className="h-4 w-4" /> Download Excel</>
+                }
+              </Button>
+              <Button variant="plain" onClick={() => setExportOpen(false)}>Batal</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Import Modal ── */}
       <Dialog open={importOpen} onOpenChange={setImportOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
