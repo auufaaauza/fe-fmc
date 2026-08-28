@@ -40,13 +40,13 @@ export default function LoginPage() {
         {/* ── Brand Header (Logo -> Nama Brand -> Judul Login) ── */}
         <div className="mb-6 flex flex-col items-center text-center">
           {/* Logo container yang jelas & menonjol */}
-          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50/80 border border-indigo-100/80 shadow-xs p-2.5">
+          <div className="mb-3.5 flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-2xl bg-indigo-50/80 border border-indigo-100 shadow-sm p-3 transition-transform hover:scale-105">
             <Image
               src="/image/logo.png"
               alt="Logo Find My Career"
-              width={64}
-              height={64}
-              className="h-full w-full object-contain"
+              width={96}
+              height={96}
+              className="h-full w-full object-contain drop-shadow-sm"
               priority
             />
           </div>
