@@ -16,6 +16,17 @@ import {
   Users2,
   Wrench,
 } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  LabelList,
+} from "recharts";
 import { api } from "@/lib/axios";
 import type { InterestCategory, StudyProgram, Subject } from "@/types";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -147,10 +158,29 @@ const emptyProgram = {
   interest_weight: "0.30",
 };
 
+// RIASEC color palette
+const RIASEC_COLORS = ["#4f46e5", "#7c3aed", "#ec4899", "#f59e0b", "#10b981", "#0ea5e9"];
+
+interface RiasecItem { id: number; name: string; total_score: number; }
+
+function RiasecTooltip({ active, payload }: any) {
+  if (active && payload && payload.length) {
+    const d = payload[0].payload as RiasecItem;
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-lg text-xs">
+        <p className="font-semibold text-slate-800 mb-0.5">{d.name}</p>
+        <p className="text-indigo-600 font-medium">{d.total_score} Poin</p>
+      </div>
+    );
+  }
+  return null;
+}
+
 export default function ProgramStudiPage() {
   const [programs, setPrograms] = useState<StudyProgram[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [categories, setCategories] = useState<InterestCategory[]>([]);
+  const [riasecData, setRiasecData] = useState<RiasecItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<StudyProgram | null>(null);
@@ -161,10 +191,11 @@ export default function ProgramStudiPage() {
 
   async function loadData() {
     try {
-      const [resPrograms, resSubjects, resCategories] = await Promise.allSettled([
+      const [resPrograms, resSubjects, resCategories, resStats] = await Promise.allSettled([
         api.get("/admin/study-programs"),
         api.get("/subjects"),
         api.get("/interest-categories"),
+        api.get("/admin/stats"),
       ]);
 
       if (resPrograms.status === "fulfilled") {
@@ -175,6 +206,9 @@ export default function ProgramStudiPage() {
       }
       if (resCategories.status === "fulfilled") {
         setCategories(resCategories.value.data.data || []);
+      }
+      if (resStats.status === "fulfilled") {
+        setRiasecData(resStats.value.data.data?.riasec_distribution || []);
       }
     } catch (error: any) {
       toast({
@@ -473,6 +507,80 @@ export default function ProgramStudiPage() {
           </Dialog>
         }
       />
+
+      {/* ── RIASEC DISTRIBUTION BAR CHART ── */}
+      <div className="nb-card p-5 sm:p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50">
+              <Sparkles className="h-4 w-4 text-purple-500" />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900">Distribusi Minat Siswa (RIASEC)</h2>
+              <p className="text-xs text-slate-500">Akumulasi skor minat karir seluruh siswa berdasarkan 6 dimensi Holland</p>
+            </div>
+          </div>
+          <span className="hidden sm:inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-700">
+            Holistic
+          </span>
+        </div>
+
+        {riasecData.length === 0 ? (
+          <div className="flex items-center justify-center py-10 text-sm text-slate-400">
+            Belum ada data kuesioner dari siswa.
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart
+              data={riasecData}
+              margin={{ top: 8, right: 12, left: -16, bottom: 0 }}
+              barSize={32}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 11, fill: "#64748b" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 10, fill: "#94a3b8" }}
+                axisLine={false}
+                tickLine={false}
+                allowDecimals={false}
+                label={{ value: "Poin", angle: -90, position: "insideLeft", offset: 20, fontSize: 10, fill: "#94a3b8" }}
+              />
+              <Tooltip content={<RiasecTooltip />} cursor={{ fill: "#f8fafc" }} />
+              <Bar dataKey="total_score" radius={[6, 6, 0, 0]}>
+                <LabelList
+                  dataKey="total_score"
+                  position="top"
+                  style={{ fontSize: 10, fill: "#64748b", fontWeight: 600 }}
+                />
+                {riasecData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={RIASEC_COLORS[index % RIASEC_COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+
+        {/* Legend */}
+        {riasecData.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
+            {riasecData.map((item, idx) => (
+              <div key={item.id} className="flex items-center gap-1.5 text-xs text-slate-600">
+                <span
+                  className="h-2.5 w-2.5 rounded-sm shrink-0"
+                  style={{ backgroundColor: RIASEC_COLORS[idx % RIASEC_COLORS.length] }}
+                />
+                <span className="font-medium">{item.name}</span>
+                <span className="text-slate-400">({item.total_score} Poin)</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* ── FILTER RUMPUN ILMU TABS & PENCARIAN ── */}
       <div className="space-y-3">

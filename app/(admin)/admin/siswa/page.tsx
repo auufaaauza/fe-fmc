@@ -42,10 +42,15 @@ const emptyForm = { name: "", nisn: "", class: "", password: "", is_active: true
 interface ImportResultRow { nisn: string; name: string; action: string; scores: number; }
 interface ImportSummary { total_processed: number; total_errors: number; }
 
-/** Derive sub-class label from full class name, e.g. "XII IPA 1" → "IPA" */
+/** Derive grade (tingkat) from class name: "XII IPA 1" → "XII" */
+function parseGrade(className: string): string {
+  const parts = className.trim().split(/\s+/);
+  return parts[0]?.toUpperCase() ?? "";
+}
+
+/** Derive sub-class from class name: "XII IPA 1" → "IPA" */
 function parseSubClass(className: string): string {
   const parts = className.trim().split(/\s+/);
-  // Typically: "XII", "IPA", "1" — sub-class is part index 1 if it exists
   if (parts.length >= 2) return parts[1].toUpperCase();
   return "";
 }
@@ -53,8 +58,10 @@ function parseSubClass(className: string): string {
 export default function AdminSiswaPage() {
   const [students, setStudents] = useState<StudentListItem[]>([]);
   const [classes, setClasses] = useState<SchoolClass[]>([]);
-  const [selectedClass, setSelectedClass] = useState<string>("");
-  const [selectedSubClass, setSelectedSubClass] = useState<string>("");
+  // 3-layer filter
+  const [selectedGrade, setSelectedGrade] = useState<string>("");       // "" | "X" | "XI" | "XII"
+  const [selectedSubClass, setSelectedSubClass] = useState<string>(""); // "" | "IPA" | "IPS" | ...
+  const [selectedClass, setSelectedClass] = useState<string>("");       // "" | exact class name
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -78,27 +85,62 @@ export default function AdminSiswaPage() {
   const [exportClass, setExportClass] = useState<string>("");
   const [exporting, setExporting] = useState(false);
 
-  // ── Derived: unique sub-classes from loaded classes ──────────────────────────
-  const subClassOptions = useMemo(() => {
-    const set = new Set<string>();
-    classes.forEach((c) => {
-      const sub = parseSubClass(c.name);
-      if (sub) set.add(sub);
-    });
-    return Array.from(set).sort();
+  // ── Derived: unique grades from loaded classes ────────────────────────────
+  const gradeOptions = useMemo(() => {
+    const known = ["X", "XI", "XII"];
+    const fromClasses = Array.from(new Set(classes.map((c) => parseGrade(c.name)).filter(Boolean)));
+    // Prefer ordered known grades first, then any extras
+    const ordered = known.filter((g) => fromClasses.includes(g));
+    const extras = fromClasses.filter((g) => !known.includes(g));
+    return [...ordered, ...extras];
   }, [classes]);
 
-  // ── Filtered list ─────────────────────────────────────────────────────────────
+  // ── Derived: sub-classes filtered by selected grade ───────────────────────
+  const subClassOptions = useMemo(() => {
+    const set = new Set<string>();
+    classes
+      .filter((c) => !selectedGrade || parseGrade(c.name) === selectedGrade)
+      .forEach((c) => {
+        const sub = parseSubClass(c.name);
+        if (sub) set.add(sub);
+      });
+    return Array.from(set).sort();
+  }, [classes, selectedGrade]);
+
+  // ── Derived: individual classes filtered by grade + sub-class ────────────
+  const classOptions = useMemo(() => {
+    return classes.filter((c) => {
+      const gradeOk = !selectedGrade || parseGrade(c.name) === selectedGrade;
+      const subOk = !selectedSubClass || parseSubClass(c.name) === selectedSubClass;
+      return gradeOk && subOk;
+    });
+  }, [classes, selectedGrade, selectedSubClass]);
+
+  // ── Filtered student list (grade + sub-class + exact class + search) ──────
   const filtered = useMemo(() => {
     return students.filter((s) => {
-      const matchesSearch = `${s.nisn} ${s.name} ${s.class ?? ""}`.toLowerCase().includes(search.toLowerCase());
-      const matchesClass = selectedClass ? s.class === selectedClass : true;
-      const matchesSubClass = selectedSubClass
-        ? (s.class ? parseSubClass(s.class) === selectedSubClass : false)
-        : true;
-      return matchesSearch && matchesClass && matchesSubClass;
+      const cls = s.class ?? "";
+      const matchesSearch = `${s.nisn} ${s.name} ${cls}`.toLowerCase().includes(search.toLowerCase());
+      const matchesGrade = !selectedGrade || parseGrade(cls) === selectedGrade;
+      const matchesSubClass = !selectedSubClass || parseSubClass(cls) === selectedSubClass;
+      const matchesClass = !selectedClass || cls === selectedClass;
+      return matchesSearch && matchesGrade && matchesSubClass && matchesClass;
     });
-  }, [students, search, selectedClass, selectedSubClass]);
+  }, [students, search, selectedGrade, selectedSubClass, selectedClass]);
+
+  /** Reset lower-level filters when a higher-level filter changes */
+  function handleGradeChange(val: string) {
+    setSelectedGrade(val);
+    setSelectedSubClass("");
+    setSelectedClass("");
+  }
+  function handleSubClassChange(val: string) {
+    setSelectedSubClass(val);
+    setSelectedClass(""); // clear exact class when sub-class changes
+  }
+  function resetAllFilters() {
+    setSelectedGrade(""); setSelectedSubClass(""); setSelectedClass(""); setSearch("");
+  }
 
   async function loadData() {
     try {
@@ -117,11 +159,6 @@ export default function AdminSiswaPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  // Reset sub-class filter if selected class changes
-  function handleClassChange(val: string) {
-    setSelectedClass(val);
-    setSelectedSubClass("");
-  }
 
   function startCreate() { setEditing(null); setForm(emptyForm); setOpen(true); }
   function startEdit(student: StudentListItem) {
@@ -323,81 +360,113 @@ export default function AdminSiswaPage() {
       />
 
       {/* ── Filter & Search ── */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-        {/* Filter Kelas */}
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-slate-500 uppercase tracking-wide">Filter Kelas</label>
-          <select
-            value={selectedClass}
-            onChange={(e) => handleClassChange(e.target.value)}
-            className="nb-input"
-            id="filter-kelas"
-          >
-            <option value="">-- Semua Kelas ({students.length}) --</option>
-            {classes.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
-          </select>
+      <div className="nb-card p-4 space-y-4">
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+          <Filter className="h-3.5 w-3.5" /> Filter Siswa
         </div>
 
-        {/* Filter Sub-Kelas / Jurusan */}
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-slate-500 uppercase tracking-wide">
-            <span className="flex items-center gap-1.5"><Filter className="h-3 w-3" /> Sub Kelas / Jurusan</span>
-          </label>
-          <select
-            value={selectedSubClass}
-            onChange={(e) => { setSelectedSubClass(e.target.value); setSelectedClass(""); }}
-            className="nb-input"
-            id="filter-sub-kelas"
-          >
-            <option value="">-- Semua Jurusan --</option>
-            {subClassOptions.map((sub) => (
-              <option key={sub} value={sub}>{sub}</option>
-            ))}
-          </select>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+          {/* ① Tingkat Kelas */}
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-600">Tingkat Kelas</label>
+            <select
+              value={selectedGrade}
+              onChange={(e) => handleGradeChange(e.target.value)}
+              className="nb-input"
+              id="filter-tingkat"
+            >
+              <option value="">Semua Tingkat</option>
+              {gradeOptions.map((g) => (
+                <option key={g} value={g}>Kelas {g}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* ② Sub Kelas / Jurusan */}
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-600">Jurusan / Sub Kelas</label>
+            <select
+              value={selectedSubClass}
+              onChange={(e) => handleSubClassChange(e.target.value)}
+              className="nb-input"
+              id="filter-sub-kelas"
+            >
+              <option value="">Semua Jurusan</option>
+              {subClassOptions.map((sub) => (
+                <option key={sub} value={sub}>{sub}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* ③ Kelas Spesifik */}
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-600">
+              Kelas
+              {(selectedGrade || selectedSubClass) && (
+                <span className="ml-1 text-indigo-500 font-normal">
+                  ({classOptions.length} kelas)
+                </span>
+              )}
+            </label>
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="nb-input"
+              id="filter-kelas"
+            >
+              <option value="">Semua Kelas</option>
+              {classOptions.map((c) => (
+                <option key={c.id} value={c.name}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* ④ Search */}
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-600">Cari Siswa</label>
+            <Input
+              placeholder="NISN, nama, atau kelas..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         </div>
 
-        {/* Search */}
-        <div className="sm:col-span-2">
-          <label className="mb-1.5 block text-xs font-medium text-slate-500 uppercase tracking-wide">Pencarian Siswa</label>
-          <Input
-            placeholder="Cari berdasarkan NIS, nama, atau kelas..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        {/* Active filter chips */}
+        {(selectedGrade || selectedSubClass || selectedClass || search) && (
+          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 text-xs">
+            <span className="text-slate-500 font-medium">Filter aktif:</span>
+            {selectedGrade && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 font-medium text-blue-700">
+                Tingkat: {selectedGrade}
+                <button onClick={() => handleGradeChange("")} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+              </span>
+            )}
+            {selectedSubClass && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2.5 py-1 font-medium text-violet-700">
+                Jurusan: {selectedSubClass}
+                <button onClick={() => handleSubClassChange("")} className="hover:text-violet-900"><X className="h-3 w-3" /></button>
+              </span>
+            )}
+            {selectedClass && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-1 font-medium text-indigo-700">
+                Kelas: {selectedClass}
+                <button onClick={() => setSelectedClass("")} className="hover:text-indigo-900"><X className="h-3 w-3" /></button>
+              </span>
+            )}
+            {search && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">
+                Cari: "{search}"
+                <button onClick={() => setSearch("")} className="hover:text-slate-800"><X className="h-3 w-3" /></button>
+              </span>
+            )}
+            <span className="text-slate-400">· {filtered.length} siswa ditemukan</span>
+            <button onClick={resetAllFilters} className="ml-auto text-red-500 hover:text-red-700 font-medium">
+              Reset semua
+            </button>
+          </div>
+        )}
       </div>
-
-      {/* Active filter chips */}
-      {(selectedClass || selectedSubClass || search) && (
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="text-slate-500 font-medium">Filter aktif:</span>
-          {selectedClass && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-1 font-medium text-indigo-700">
-              Kelas: {selectedClass}
-              <button onClick={() => setSelectedClass("")} className="hover:text-indigo-900"><X className="h-3 w-3" /></button>
-            </span>
-          )}
-          {selectedSubClass && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2.5 py-1 font-medium text-violet-700">
-              Jurusan: {selectedSubClass}
-              <button onClick={() => setSelectedSubClass("")} className="hover:text-violet-900"><X className="h-3 w-3" /></button>
-            </span>
-          )}
-          {search && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">
-              Cari: "{search}"
-              <button onClick={() => setSearch("")} className="hover:text-slate-800"><X className="h-3 w-3" /></button>
-            </span>
-          )}
-          <span className="text-slate-400">· {filtered.length} siswa ditemukan</span>
-          <button
-            onClick={() => { setSelectedClass(""); setSelectedSubClass(""); setSearch(""); }}
-            className="text-red-500 hover:text-red-700 font-medium"
-          >
-            Reset semua
-          </button>
-        </div>
-      )}
 
       {/* ── Table ── */}
       <div className="nb-card overflow-x-auto">
