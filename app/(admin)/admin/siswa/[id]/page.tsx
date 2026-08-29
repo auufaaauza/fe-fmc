@@ -306,7 +306,11 @@ export default function AdminStudentDetailPage() {
               {/* Rank Cards */}
               <div className="space-y-4">
                 {recommendation.results?.map((result) => (
-                  <RankCard key={result.id} result={result} />
+                  <RankCard
+                    key={result.id}
+                    result={result}
+                    detailHref={`/admin/program-studi/${result.program.id}?from=/admin/siswa/${params.id}`}
+                  />
                 ))}
               </div>
             </div>

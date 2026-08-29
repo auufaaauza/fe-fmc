@@ -8,8 +8,11 @@ import { Button } from "@/components/ui/button";
 import { ScoreBreakdown } from "@/components/recommendation/ScoreBreakdown";
 import { cn } from "@/lib/utils";
 
+import { useAuth } from "@/hooks/useAuth";
+
 interface RankCardProps {
   result: RecommendationResult;
+  detailHref?: string;
 }
 
 const rankStyles: Record<number, string> = {
@@ -24,10 +27,17 @@ const rankBadgeStyles: Record<number, string> = {
   3: "bg-orange-300 text-orange-900",
 };
 
-export function RankCard({ result }: RankCardProps) {
+export function RankCard({ result, detailHref }: RankCardProps) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const score = Number(result.preference_value);
   const percent = Math.min(100, Math.round(score * 100));
+
+  const targetHref =
+    detailHref ||
+    (user?.role === "admin"
+      ? `/admin/program-studi/${result.program.id}`
+      : `/hasil/${result.program.id}`);
 
   const cardClass = rankStyles[result.rank_position] ?? "border-slate-200 bg-white";
   const badgeClass = rankBadgeStyles[result.rank_position] ?? "bg-indigo-100 text-indigo-700";
@@ -71,7 +81,7 @@ export function RankCard({ result }: RankCardProps) {
           size="sm"
           className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-1.5"
         >
-          <Link href={`/hasil/${result.program.id}`}>
+          <Link href={targetHref}>
             Lihat Detail <ExternalLink className="h-3.5 w-3.5" />
           </Link>
         </Button>
