@@ -74,7 +74,8 @@ export interface QuestionnaireAnswer {
   id: number;
   user_id: number;
   question_id: number;
-  score: number;
+  answer_score: number;
+  score?: number;
   question?: Question;
 }
 

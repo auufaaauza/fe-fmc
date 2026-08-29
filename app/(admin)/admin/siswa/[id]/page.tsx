@@ -31,7 +31,7 @@ export default function AdminStudentDetailPage() {
   const params = useParams<{ id: string }>();
   const [student, setStudent] = useState<UserType | null>(null);
   const [scores, setScores] = useState<StudentScore[]>([]);
-  const [answers, setAnswers] = useState<any[]>([]);
+  const [answers, setAnswers] = useState<QuestionnaireAnswer[]>([]);
   const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("rekomendasi");
@@ -495,7 +495,7 @@ export default function AdminStudentDetailPage() {
                       </td>
                       <td className="text-center">
                         <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-mono font-semibold text-slate-700">
-                          {ans.score} / 5
+                          {ans.answer_score ?? ans.score ?? "-"} / 5
                         </span>
                       </td>
                     </tr>
