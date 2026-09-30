@@ -562,10 +562,12 @@ export default function AdminSiswaPage() {
                   <td className="text-right">
                     <div className="flex justify-end gap-1.5">
                       <button
-                        className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+                        className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border border-blue-200 bg-blue-50 px-2 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors sm:px-2.5"
                         onClick={() => resetPassword(student)} title="Reset Kata Sandi"
                       >
-                        <KeyRound className="h-3.5 w-3.5" /> <span>Reset Kata Sandi</span>
+                        <KeyRound className="h-3.5 w-3.5" />
+                        <span className="sm:hidden">Reset</span>
+                        <span className="hidden sm:inline">Reset Kata Sandi</span>
                       </button>
                       <button
                         className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"

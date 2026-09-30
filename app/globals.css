@@ -70,9 +70,16 @@ body::before {
 }
 
 .overflow-x-auto,
+.overflow-x-scroll,
 .overflow-y-auto {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+}
+
+/* Mobile tables must accept a horizontal finger drag. */
+.touch-pan-x {
+  touch-action: pan-x pan-y;
+  scrollbar-width: thin;
 }
 
 ::selection {

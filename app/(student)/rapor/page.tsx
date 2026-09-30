@@ -254,7 +254,7 @@ export default function RaporPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-scroll touch-pan-x overscroll-x-contain pb-1">
           <table className="w-full text-xs sm:text-sm border-collapse min-w-[620px]">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-600">
@@ -406,7 +406,7 @@ export default function RaporPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-scroll touch-pan-x overscroll-x-contain pb-1">
             <table className="w-full text-xs sm:text-sm border-collapse min-w-[620px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-600">

@@ -141,8 +141,8 @@ export default function AdminStudentDetailPage() {
 
         <div className="flex flex-wrap items-center gap-2">
           {recommendation && <PrintableReport student={student} recommendation={recommendation} scores={scores} />}
-          <Button type="button" variant="outline" size="sm" onClick={resetPassword} className="flex items-center gap-1.5">
-            <KeyRound className="h-4 w-4" /> Reset Kata Sandi
+          <Button type="button" variant="outline" size="sm" onClick={resetPassword} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs">
+            <KeyRound className="h-4 w-4" /> <span className="sm:hidden">Reset</span><span className="hidden sm:inline">Reset Kata Sandi</span>
           </Button>
           <Button asChild variant="plain" size="sm" className="flex items-center gap-1.5">
             <Link href={fromClass && classId ? `/admin/kelas?classId=${classId}` : returnToStudentList}>
