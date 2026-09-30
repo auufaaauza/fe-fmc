@@ -37,7 +37,12 @@ html {
   scroll-behavior: smooth;
 }
 
-html, body, button, input, select, textarea, a {
+html, body {
+  touch-action: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, input, select, textarea, a {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
@@ -80,6 +85,11 @@ body::before {
 .touch-pan-x {
   touch-action: pan-x pan-y;
   scrollbar-width: thin;
+}
+
+.rapor-table-scroll,
+.rapor-table-scroll * {
+  touch-action: pan-x pan-y !important;
 }
 
 ::selection {
