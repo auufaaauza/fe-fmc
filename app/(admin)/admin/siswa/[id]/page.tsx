@@ -9,7 +9,6 @@ import {
   ClipboardList,
   GraduationCap,
   MessageSquareQuote,
-  MoveHorizontal,
   Save,
   School,
   ShieldCheck,
@@ -126,6 +125,34 @@ export default function AdminStudentDetailPage() {
     { key: "rapor", label: `Nilai Rapor (${scores.length} Mapel)`, icon: BookOpen },
     { key: "kuesioner", label: `Kuesioner (${answers.length} Jawaban)`, icon: ClipboardList },
   ];
+
+  function renderMobileScores(items: StudentScore[]) {
+    return (
+      <div className="space-y-3 md:hidden">
+        {items.map((score, index) => {
+          const values = [score.sem1, score.sem2, score.sem3, score.sem4, score.sem5];
+          const numbers = values.filter((value) => value !== null && value !== undefined && value !== "" && !isNaN(Number(value))).map(Number);
+          const average = numbers.length ? numbers.reduce((sum, value) => sum + value, 0) / numbers.length : Number(score.score || 0);
+          return (
+            <article key={score.id} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+              <div className="mb-3 flex items-start justify-between gap-2">
+                <h4 className="text-sm font-semibold text-slate-800">{index + 1}. {score.subject?.name || "Mata Pelajaran"}</h4>
+                <span className="shrink-0 rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700">Rerata {average ? average.toFixed(1) : "-"}</span>
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                {values.map((value, valueIndex) => (
+                  <div key={valueIndex} className="rounded-lg bg-slate-50 px-1 py-2 text-center">
+                    <span className="block text-[10px] text-slate-500">Sem. {valueIndex + 1}</span>
+                    <span className="mt-1 block font-mono text-sm font-semibold text-slate-800">{value !== null && value !== undefined && value !== "" ? Number(value) : "-"}</span>
+                  </div>
+                ))}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 sm:space-y-6">
@@ -395,14 +422,10 @@ export default function AdminStudentDetailPage() {
                 </p>
               </div>
 
-              {/* Scroll hint mobile */}
-              <div className="flex items-center gap-2 text-xs text-slate-400 sm:hidden">
-                <MoveHorizontal className="h-3.5 w-3.5 shrink-0" /> Geser tabel untuk melihat semua semester
-              </div>
-
               {/* Table 1: Mapel 1-19 */}
               <div className="nb-card overflow-hidden">
-                <div className="overflow-x-auto">
+                {renderMobileScores(scores.filter((s) => (s.subject?.id || s.subject_id) <= 19))}
+                <div className="hidden overflow-x-auto md:block">
                   <table className="w-full text-xs sm:text-sm border-collapse min-w-[580px]">
                     <thead>
                       <tr className="border-b border-slate-200 bg-slate-50">
@@ -454,7 +477,8 @@ export default function AdminStudentDetailPage() {
               {/* Table 2: Mapel >= 20 */}
               {scores.some((s) => (s.subject?.id || s.subject_id) >= 20) && (
                 <div className="nb-card overflow-hidden">
-                  <div className="overflow-x-auto">
+                  {renderMobileScores(scores.filter((s) => (s.subject?.id || s.subject_id) >= 20))}
+                  <div className="hidden overflow-x-auto md:block">
                     <table className="w-full text-xs sm:text-sm border-collapse min-w-[580px]">
                       <thead>
                         <tr className="border-b border-slate-200 bg-slate-50">
