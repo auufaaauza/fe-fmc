@@ -195,6 +195,45 @@ export default function RaporPage() {
 
   if (loading) return <LoadingSpinner />;
 
+  const renderMobileSubjectCards = (subjectList: Subject[]) => (
+    <div className="space-y-3 p-3 md:hidden">
+      {subjectList.map((subject, index) => {
+        const item = scores[subject.id] || { sem1: "", sem2: "", sem3: "", sem4: "", sem5: "" };
+        const stats = getSubjectStats(subject.id);
+        const fields = ["sem1", "sem2", "sem3", "sem4", "sem5"] as const;
+        return (
+          <section key={subject.id} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div className="mb-3 flex items-start justify-between gap-2">
+              <h4 className="text-sm font-semibold leading-snug text-slate-800">{index + 1}. {subject.name}</h4>
+              <span className="shrink-0 rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700">
+                {stats.hasValue ? `Rerata ${stats.avg.toFixed(1)}` : "Belum diisi"}
+              </span>
+            </div>
+            <div className="grid grid-cols-5 gap-2">
+              {fields.map((field, fieldIndex) => (
+                <label key={field} className="min-w-0 text-center">
+                  <span className="mb-1 block text-[10px] font-medium text-slate-500">Sem. {fieldIndex + 1}</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="any"
+                    inputMode="decimal"
+                    placeholder="-"
+                    aria-label={`${subject.name}, semester ${fieldIndex + 1}`}
+                    value={item[field]}
+                    onChange={(event) => handleSemesterChange(subject.id, field, event.target.value)}
+                    className="w-full min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-1 py-2 text-center text-sm font-medium focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                  />
+                </label>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+
   return (
     <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 max-w-5xl mx-auto pb-28 sm:pb-32">
       {/* ── KOP & PETUNJUK FORMAT ANGKET BK ── */}
@@ -254,7 +293,8 @@ export default function RaporPage() {
           </div>
         </div>
 
-        <div className="rapor-table-scroll overflow-x-scroll touch-pan-x overscroll-x-contain pb-1">
+        {renderMobileSubjectCards(table1Subjects)}
+        <div className="rapor-table-scroll hidden overflow-x-auto pb-1 md:block">
           <table className="w-full text-xs sm:text-sm border-collapse min-w-[620px]">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-600">
@@ -406,7 +446,8 @@ export default function RaporPage() {
             </div>
           </div>
 
-          <div className="rapor-table-scroll overflow-x-scroll touch-pan-x overscroll-x-contain pb-1">
+          {renderMobileSubjectCards(table2Subjects)}
+          <div className="rapor-table-scroll hidden overflow-x-auto pb-1 md:block">
             <table className="w-full text-xs sm:text-sm border-collapse min-w-[620px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-600">
