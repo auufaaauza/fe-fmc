@@ -23,7 +23,8 @@ export default function QuestionnairePage() {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { refreshMe } = useAuth();
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "offline">("idle");
+  const { refreshMe, user } = useAuth();
   const { toast } = useToast();
 
   const current = categories[page];
@@ -37,7 +38,10 @@ export default function QuestionnairePage() {
       try {
         const response = await api.get("/questionnaire");
         setCategories(response.data.data);
-        setAnswers(response.data.answers ?? {});
+        const serverAnswers = response.data.answers ?? {};
+        const draftKey = `fmc-riasec-draft-${user?.id ?? "current"}`;
+        const draft = typeof window !== "undefined" ? localStorage.getItem(draftKey) : null;
+        setAnswers(draft ? { ...serverAnswers, ...JSON.parse(draft) } : serverAnswers);
       } catch (error: any) {
         toast({ title: "Gagal memuat kuesioner", description: error.appMessage, type: "error" });
       } finally {
@@ -45,7 +49,39 @@ export default function QuestionnairePage() {
       }
     }
     loadData();
-  }, [toast]);
+    const handleOnline = () => {
+      const draftKey = `fmc-riasec-draft-${user?.id ?? "current"}`;
+      const draft = typeof window !== "undefined" ? localStorage.getItem(draftKey) : null;
+      if (draft) {
+        try { persistAnswers(JSON.parse(draft)); } catch { /* draft akan tetap tersimpan */ }
+      }
+    };
+    window.addEventListener("online", handleOnline);
+    return () => window.removeEventListener("online", handleOnline);
+  }, [toast, user?.id]);
+
+  async function persistAnswers(nextAnswers: Record<number, number>) {
+    const draftKey = `fmc-riasec-draft-${user?.id ?? "current"}`;
+    if (typeof window !== "undefined") localStorage.setItem(draftKey, JSON.stringify(nextAnswers));
+    setSaveStatus("saving");
+    try {
+      await api.post("/questionnaire/answers", {
+        answers: totalQuestions.map((q) => ({ question_id: q.id, answer_score: nextAnswers[q.id] })).filter((a) => a.answer_score !== undefined),
+      });
+      if (typeof window !== "undefined") localStorage.removeItem(draftKey);
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("offline");
+    }
+  }
+
+  function updateAnswer(questionId: number, value: number) {
+    setAnswers((prev) => {
+      const next = { ...prev, [questionId]: value };
+      window.setTimeout(() => persistAnswers(next), 500);
+      return next;
+    });
+  }
 
   async function saveAll() {
     setSaving(true);
@@ -144,7 +180,7 @@ export default function QuestionnairePage() {
                         <td
                           key={scale.value}
                           onClick={() =>
-                            setAnswers((prev) => ({ ...prev, [question.id]: scale.value }))
+                            updateAnswer(question.id, scale.value)
                           }
                           className="py-2 px-2 text-center cursor-pointer hover:bg-indigo-50/30 transition-colors"
                         >
@@ -155,7 +191,7 @@ export default function QuestionnairePage() {
                               value={scale.value}
                               checked={isChecked}
                               onChange={() =>
-                                setAnswers((prev) => ({ ...prev, [question.id]: scale.value }))
+                                updateAnswer(question.id, scale.value)
                               }
                               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer accent-indigo-600"
                             />
@@ -198,7 +234,7 @@ export default function QuestionnairePage() {
                       <label
                         key={scale.value}
                         onClick={() =>
-                          setAnswers((prev) => ({ ...prev, [question.id]: scale.value }))
+                          updateAnswer(question.id, scale.value)
                         }
                         className="flex flex-col items-center justify-center cursor-pointer py-1 px-2 group"
                       >
@@ -208,7 +244,7 @@ export default function QuestionnairePage() {
                           value={scale.value}
                           checked={isChecked}
                           onChange={() =>
-                            setAnswers((prev) => ({ ...prev, [question.id]: scale.value }))
+                            updateAnswer(question.id, scale.value)
                           }
                           className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer accent-indigo-600"
                         />
@@ -239,6 +275,9 @@ export default function QuestionnairePage() {
 
       {/* ── Navigation Buttons ── */}
       <div className="flex items-center justify-between gap-3 pt-0.5">
+        <p className={`text-[11px] ${saveStatus === "offline" ? "text-amber-600" : "text-slate-400"}`}>
+          {saveStatus === "saving" ? "Menyimpan jawaban..." : saveStatus === "saved" ? "Jawaban tersimpan" : saveStatus === "offline" ? "Koneksi bermasalah. Jawaban disimpan di perangkat." : ""}
+        </p>
         <Button
           variant="plain"
           type="button"

@@ -40,3 +40,6 @@ yarn-error.log*
 *.swo
 .DS_Store
 Thumbs.db
+uml
+ringkasan_perhitungan_saw.md
+.gitignore

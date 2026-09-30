@@ -2,6 +2,7 @@
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   AlertCircle,
   BarChart2,
@@ -56,13 +57,14 @@ function parseSubClass(className: string): string {
 }
 
 export default function AdminSiswaPage() {
+  const searchParams = useSearchParams();
   const [students, setStudents] = useState<StudentListItem[]>([]);
   const [classes, setClasses] = useState<SchoolClass[]>([]);
   // 3-layer filter
-  const [selectedGrade, setSelectedGrade] = useState<string>("");       // "" | "X" | "XI" | "XII"
-  const [selectedSubClass, setSelectedSubClass] = useState<string>(""); // "" | "IPA" | "IPS" | ...
-  const [selectedClass, setSelectedClass] = useState<string>("");       // "" | exact class name
-  const [search, setSearch] = useState("");
+  const [selectedGrade, setSelectedGrade] = useState<string>(() => searchParams.get("grade") || "");
+  const [selectedSubClass, setSelectedSubClass] = useState<string>(() => searchParams.get("subClass") || "");
+  const [selectedClass, setSelectedClass] = useState<string>(() => searchParams.get("class") || "");
+  const [search, setSearch] = useState(() => searchParams.get("search") || "");
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<StudentListItem | null>(null);
@@ -140,6 +142,15 @@ export default function AdminSiswaPage() {
   }
   function resetAllFilters() {
     setSelectedGrade(""); setSelectedSubClass(""); setSelectedClass(""); setSearch("");
+  }
+
+  function detailHref(studentId: number) {
+    const query = new URLSearchParams({ from: "siswa" });
+    if (selectedGrade) query.set("grade", selectedGrade);
+    if (selectedSubClass) query.set("subClass", selectedSubClass);
+    if (selectedClass) query.set("class", selectedClass);
+    if (search) query.set("search", search);
+    return `/admin/siswa/${studentId}?${query.toString()}`;
   }
 
   async function loadData() {
@@ -524,10 +535,10 @@ export default function AdminSiswaPage() {
                   <td className="text-right">
                     <div className="flex justify-end gap-1.5">
                       <button
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                        onClick={() => resetPassword(student)} title="Reset Password"
+                        className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+                        onClick={() => resetPassword(student)} title="Reset Kata Sandi"
                       >
-                        <KeyRound className="h-4 w-4" />
+                        <KeyRound className="h-3.5 w-3.5" /> <span>Reset Kata Sandi</span>
                       </button>
                       <button
                         className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
@@ -543,7 +554,7 @@ export default function AdminSiswaPage() {
                       </button>
                       <Link
                         className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-                        href={`/admin/siswa/${student.id}`} title="Lihat Detail"
+                        href={detailHref(student.id)} title="Lihat Detail"
                       >
                         <Eye className="h-4 w-4" />
                       </Link>

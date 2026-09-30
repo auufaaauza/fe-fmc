@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   BookOpen,
@@ -16,6 +16,7 @@ import {
   Trophy,
   User,
   XCircle,
+  KeyRound,
 } from "lucide-react";
 import { api } from "@/lib/axios";
 import type { QuestionnaireAnswer, Recommendation, StudentScore, User as UserType } from "@/types";
@@ -29,6 +30,18 @@ type Tab = "rekomendasi" | "rapor" | "kuesioner";
 
 export default function AdminStudentDetailPage() {
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const fromClass = searchParams.get("from") === "kelas";
+  const classId = searchParams.get("classId");
+  const returnToStudentList = (() => {
+    const query = new URLSearchParams();
+    ["grade", "subClass", "class", "search"].forEach((key) => {
+      const value = searchParams.get(key);
+      if (value) query.set(key, value);
+    });
+    const suffix = query.toString();
+    return suffix ? `/admin/siswa?${suffix}` : "/admin/siswa";
+  })();
   const [student, setStudent] = useState<UserType | null>(null);
   const [scores, setScores] = useState<StudentScore[]>([]);
   const [answers, setAnswers] = useState<QuestionnaireAnswer[]>([]);
@@ -37,7 +50,18 @@ export default function AdminStudentDetailPage() {
   const [activeTab, setActiveTab] = useState<Tab>("rekomendasi");
   const [counselorNotes, setCounselorNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
+  const [nextStudentId, setNextStudentId] = useState<number | null>(null);
   const { toast } = useToast();
+
+  async function resetPassword() {
+    if (!student || !window.confirm(`Reset kata sandi ${student.name}?`)) return;
+    try {
+      const response = await api.post(`/admin/students/${student.id}/reset-password`);
+      toast({ title: "Kata sandi berhasil direset", description: response.data.message || "Sampaikan kata sandi sementara kepada siswa.", type: "success" });
+    } catch (error: any) {
+      toast({ title: "Gagal mereset kata sandi", description: error.appMessage || "Terjadi kesalahan.", type: "error" });
+    }
+  }
 
   useEffect(() => {
     async function loadDetail() {
@@ -49,6 +73,11 @@ export default function AdminStudentDetailPage() {
         const rec = response.data.data;
         setRecommendation(rec);
         if (rec?.counselor_notes) setCounselorNotes(rec.counselor_notes);
+        if (searchParams.get("from") === "kelas" && response.data.student?.class) {
+          const classResponse = await api.get("/admin/students", { params: { class: response.data.student.class } });
+          const next = (classResponse.data.data || []).find((item: UserType & { is_validated?: boolean }) => item.id !== response.data.student.id && !item.is_validated);
+          setNextStudentId(next?.id ?? null);
+        }
       } catch (error: any) {
         toast({ title: "Gagal memuat detail siswa", description: error.appMessage || "Terjadi kesalahan.", type: "error" });
       } finally { setLoading(false); }
@@ -103,16 +132,22 @@ export default function AdminStudentDetailPage() {
       {/* Back + Title */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-slate-200 print:hidden">
         <div>
-          <div className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 mb-2">
-            Detail Profil Siswa
+          <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-600">
+            <span className="rounded-full bg-slate-100 px-3 py-1">{fromClass ? "Kelola Kelas" : "Manajemen Siswa"}</span>
+            {fromClass && <span>/ {student.class || "Kelas"} / Detail Siswa</span>}
           </div>
           <h1 className="text-xl sm:text-2xl font-semibold text-slate-900">{student.name}</h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {recommendation && <PrintableReport student={student} recommendation={recommendation} scores={scores} />}
+          <Button type="button" variant="outline" size="sm" onClick={resetPassword} className="flex items-center gap-1.5">
+            <KeyRound className="h-4 w-4" /> Reset Kata Sandi
+          </Button>
           <Button asChild variant="plain" size="sm" className="flex items-center gap-1.5">
-            <Link href="/admin/siswa"><ArrowLeft className="h-4 w-4" /> Kembali</Link>
+            <Link href={fromClass && classId ? `/admin/kelas?classId=${classId}` : returnToStudentList}>
+              <ArrowLeft className="h-4 w-4" /> {fromClass ? "Kembali ke Kelas" : "Kembali ke Daftar Siswa"}
+            </Link>
           </Button>
         </div>
       </div>
@@ -286,6 +321,15 @@ export default function AdminStudentDetailPage() {
                           ? "Perbarui Catatan"
                           : "Validasi & Simpan Catatan"}
                     </Button>
+                    {recommendation.is_validated && fromClass && (
+                      nextStudentId ? (
+                        <Button asChild type="button" className="flex items-center justify-center gap-2 text-xs bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto">
+                          <Link href={`/admin/siswa/${nextStudentId}?from=kelas&classId=${classId}`}>Siswa Berikutnya yang Belum Divalidasi</Link>
+                        </Button>
+                      ) : (
+                        <span className="text-xs font-medium text-emerald-700">Semua siswa di kelas ini sudah divalidasi.</span>
+                      )
+                    )}
                   </div>
                 </form>
               </div>

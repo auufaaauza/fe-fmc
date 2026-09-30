@@ -23,6 +23,7 @@ export default function RaporPage() {
   const [scores, setScores] = useState<Record<number, SemesterScoreItem>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "offline">("idle");
   const { user, refreshMe } = useAuth();
   const { toast } = useToast();
   const showFloatingBar = useFloatingBarVisibility();
@@ -55,7 +56,9 @@ export default function RaporPage() {
           }
         });
 
-        setScores(initialMap);
+        const draftKey = `fmc-rapor-draft-${user?.id ?? "current"}`;
+        const draft = typeof window !== "undefined" ? localStorage.getItem(draftKey) : null;
+        setScores(draft ? { ...initialMap, ...JSON.parse(draft) } : initialMap);
       } catch (error: any) {
         toast({
           title: "Gagal memuat data nilai",
@@ -68,7 +71,35 @@ export default function RaporPage() {
     }
 
     loadData();
-  }, [toast]);
+    const handleOnline = () => {
+      const draftKey = `fmc-rapor-draft-${user?.id ?? "current"}`;
+      const draft = typeof window !== "undefined" ? localStorage.getItem(draftKey) : null;
+      if (draft) {
+        try { persistDraft(JSON.parse(draft)); } catch { /* draft akan tetap tersimpan */ }
+      }
+    };
+    window.addEventListener("online", handleOnline);
+    return () => window.removeEventListener("online", handleOnline);
+  }, [toast, user?.id]);
+
+  async function persistDraft(nextScores: Record<number, SemesterScoreItem>, subjectList = subjects) {
+    const draftKey = `fmc-rapor-draft-${user?.id ?? "current"}`;
+    if (typeof window !== "undefined") localStorage.setItem(draftKey, JSON.stringify(nextScores));
+    setSaveStatus("saving");
+    try {
+      const payload = subjectList.map((sub) => {
+        const item = nextScores[sub.id] || { sem1: "", sem2: "", sem3: "", sem4: "", sem5: "" };
+        const vals = [item.sem1, item.sem2, item.sem3, item.sem4, item.sem5].filter((v) => v !== "").map(Number);
+        const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+        return { subject_id: sub.id, sem1: item.sem1 !== "" ? Number(item.sem1) : null, sem2: item.sem2 !== "" ? Number(item.sem2) : null, sem3: item.sem3 !== "" ? Number(item.sem3) : null, sem4: item.sem4 !== "" ? Number(item.sem4) : null, sem5: item.sem5 !== "" ? Number(item.sem5) : null, score: avg === null ? null : Number(avg.toFixed(2)) };
+      });
+      await api.post("/my-scores", { scores: payload });
+      if (typeof window !== "undefined") localStorage.removeItem(draftKey);
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("offline");
+    }
+  }
 
   function handleSemesterChange(
     subjectId: number,
@@ -79,13 +110,17 @@ export default function RaporPage() {
       const num = Number(value);
       if (num < 0 || num > 100) return;
     }
-    setScores((prev) => ({
-      ...prev,
+    setScores((prev) => {
+      const next = {
+        ...prev,
       [subjectId]: {
         ...(prev[subjectId] || { sem1: "", sem2: "", sem3: "", sem4: "", sem5: "" }),
         [field]: value,
       },
-    }));
+      };
+      window.setTimeout(() => persistDraft(next), 700);
+      return next;
+    });
   }
 
   function getSubjectStats(subjectId: number) {
@@ -140,6 +175,7 @@ export default function RaporPage() {
       });
 
       await api.post("/my-scores", { scores: payload });
+      if (typeof window !== "undefined") localStorage.removeItem(`fmc-rapor-draft-${user?.id ?? "current"}`);
       await refreshMe();
       toast({
         title: "Nilai Berhasil Disimpan",
@@ -515,6 +551,9 @@ export default function RaporPage() {
         }`}
       >
         <div className="flex items-center gap-3">
+          <p className={`text-[11px] hidden sm:block ${saveStatus === "offline" ? "text-amber-600" : "text-slate-400"}`}>
+            {saveStatus === "saving" ? "Menyimpan otomatis..." : saveStatus === "saved" ? "Tersimpan" : saveStatus === "offline" ? "Offline: draft tersimpan di perangkat" : ""}
+          </p>
           <div className="h-9 w-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center font-bold text-indigo-600 shrink-0 text-sm">
             {filledSubjectCount}
           </div>

@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   BookOpen,
@@ -39,6 +40,8 @@ export default function AdminKelasPage() {
   const [classStudents, setClassStudents] = useState<StudentListItem[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [studentSearch, setStudentSearch] = useState("");
+  const [validationFilter, setValidationFilter] = useState<"all" | "pending" | "validated">("all");
+  const searchParams = useSearchParams();
 
   // Form states
   const [formName, setFormName] = useState("");
@@ -68,6 +71,14 @@ export default function AdminKelasPage() {
   useEffect(() => {
     fetchClasses();
   }, []);
+
+  useEffect(() => {
+    const classId = Number(searchParams.get("classId"));
+    if (classId && classes.length && !selectedClassDetail) {
+      const cls = classes.find((item) => item.id === classId);
+      if (cls) handleSelectClass(cls);
+    }
+  }, [classes, searchParams]);
 
   // When a class is clicked, fetch all students belonging to that class
   async function handleSelectClass(cls: SchoolClass) {
@@ -164,7 +175,9 @@ export default function AdminKelasPage() {
     `${st.nisn} ${st.name} ${st.email || ""}`
       .toLowerCase()
       .includes(studentSearch.toLowerCase())
-  );
+  ).filter((st) => validationFilter === "all" || (validationFilter === "validated" ? st.is_validated : !st.is_validated));
+  const pendingCount = classStudents.filter((st) => !st.is_validated).length;
+  const validatedCount = classStudents.filter((st) => st.is_validated).length;
 
   return (
     <div className="space-y-6">
@@ -208,6 +221,14 @@ export default function AdminKelasPage() {
               className="pl-10"
             />
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {([['all', `Semua Siswa (${classStudents.length})`], ['pending', `Belum Divalidasi (${pendingCount})`], ['validated', `Sudah Divalidasi (${validatedCount})`]] as const).map(([key, label]) => (
+              <button key={key} type="button" onClick={() => setValidationFilter(key)} className={`rounded-lg border px-3 py-2 text-xs font-bold transition-colors ${validationFilter === key ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"}`}>
+                {label}
+              </button>
+            ))}
           </div>
 
           {/* Table Students in this class */}
@@ -268,7 +289,7 @@ export default function AdminKelasPage() {
                       </td>
                       <td className="text-right">
                         <Link
-                          href={`/admin/siswa/${st.id}`}
+                          href={`/admin/siswa/${st.id}?from=kelas&classId=${selectedClassDetail.id}`}
                           className="nb-btn-primary inline-flex items-center gap-1.5 px-3 py-1 text-xs"
                           title="Lihat Rapor, Kuesioner, & Rekomendasi"
                         >

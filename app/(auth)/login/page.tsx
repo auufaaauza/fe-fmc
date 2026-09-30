@@ -122,6 +122,10 @@ export default function LoginPage() {
               </>
             )}
           </Button>
+
+          <p className="text-center text-xs text-slate-500">
+            Lupa kata sandi? <span className="font-medium text-indigo-600">Hubungi Guru BK untuk meminta reset.</span>
+          </p>
         </form>
 
         {/* ── Footer ── */}
