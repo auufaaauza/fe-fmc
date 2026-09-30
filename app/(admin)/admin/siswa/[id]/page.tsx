@@ -50,6 +50,7 @@ export default function AdminStudentDetailPage() {
   const [counselorNotes, setCounselorNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
   const [nextStudentId, setNextStudentId] = useState<number | null>(null);
+  const [academicYears, setAcademicYears] = useState<Array<{ id: number; academic_year: string; class?: string | null; status: string; notes?: string | null }>>([]);
   const { toast } = useToast();
 
   async function resetPassword() {
@@ -71,6 +72,7 @@ export default function AdminStudentDetailPage() {
         setAnswers(response.data.answers || []);
         const rec = response.data.data;
         setRecommendation(rec);
+        setAcademicYears(response.data.academic_years || []);
         if (rec?.counselor_notes) setCounselorNotes(rec.counselor_notes);
         if (searchParams.get("from") === "kelas" && response.data.student?.class) {
           const classResponse = await api.get("/admin/students", { params: { class: response.data.student.class } });
@@ -90,6 +92,7 @@ export default function AdminStudentDetailPage() {
       toast({ title: "Validasi Gagal", description: "Catatan tidak boleh kosong.", type: "error" });
       return;
     }
+    if (!recommendation?.is_validated && !window.confirm(`Validasi rekomendasi ${student?.name || "siswa ini"}? Setelah disimpan, hasil dapat dilihat oleh siswa.`)) return;
     setSavingNotes(true);
     try {
       const res = await api.post(`/admin/students/${params.id}/counselor-notes`, { counselor_notes: counselorNotes });
@@ -117,6 +120,7 @@ export default function AdminStudentDetailPage() {
           </Button>
         </div>
       </div>
+
     );
   }
 
@@ -212,6 +216,12 @@ export default function AdminStudentDetailPage() {
             </p>
           </div>
         </div>
+      </div>
+
+      <div className="nb-card p-4 sm:p-5 print:hidden">
+        <h2 className="text-sm font-semibold text-slate-900">Riwayat Tahun Ajaran</h2>
+        <p className="mb-3 text-xs text-slate-500">Data siswa tetap tersimpan meskipun sudah lulus atau pindah.</p>
+        {academicYears.length === 0 ? <p className="text-xs text-slate-400">Belum ada riwayat tahun ajaran.</p> : <div className="space-y-2">{academicYears.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-xs"><span className="font-semibold text-slate-800">{item.academic_year} · {item.class || "-"}</span><span className={`rounded-full px-2 py-0.5 font-medium ${item.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"}`}>{item.status === "graduated" ? "Lulus" : item.status === "transferred" ? "Pindah" : item.status === "inactive" ? "Tidak Aktif" : "Aktif"}</span></div>)}</div>}
       </div>
 
       {/* Tabs */}

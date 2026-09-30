@@ -194,6 +194,7 @@ export default function RegisterPage() {
                   ))}
                 </select>
               )}
+              <p className="mt-1.5 text-[11px] text-indigo-600">Tahun ajaran pendaftaran: <strong>{new Date().getMonth() + 1 >= 7 ? `${new Date().getFullYear()}/${new Date().getFullYear() + 1}` : `${new Date().getFullYear() - 1}/${new Date().getFullYear()}`}</strong></p>
             </div>
           </div>
 

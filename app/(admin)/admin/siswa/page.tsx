@@ -65,6 +65,8 @@ export default function AdminSiswaPage() {
   const [selectedSubClass, setSelectedSubClass] = useState<string>(() => searchParams.get("subClass") || "");
   const [selectedClass, setSelectedClass] = useState<string>(() => searchParams.get("class") || "");
   const [search, setSearch] = useState(() => searchParams.get("search") || "");
+  const [studentPage, setStudentPage] = useState(1);
+  const studentsPerPage = 15;
   const [validationFilter, setValidationFilter] = useState<"all" | "pending" | "validated">(() => {
     const value = searchParams.get("validation");
     return value === "pending" || value === "validated" ? value : "all";
@@ -134,18 +136,23 @@ export default function AdminSiswaPage() {
       return matchesSearch && matchesGrade && matchesSubClass && matchesClass && matchesValidation;
     });
   }, [students, search, selectedGrade, selectedSubClass, selectedClass, validationFilter]);
+  const totalStudentPages = Math.max(1, Math.ceil(filtered.length / studentsPerPage));
+  const paginatedFiltered = filtered.slice((studentPage - 1) * studentsPerPage, studentPage * studentsPerPage);
 
   /** Reset lower-level filters when a higher-level filter changes */
   function handleGradeChange(val: string) {
+    setStudentPage(1);
     setSelectedGrade(val);
     setSelectedSubClass("");
     setSelectedClass("");
   }
   function handleSubClassChange(val: string) {
+    setStudentPage(1);
     setSelectedSubClass(val);
     setSelectedClass(""); // clear exact class when sub-class changes
   }
   function resetAllFilters() {
+    setStudentPage(1);
     setSelectedGrade(""); setSelectedSubClass(""); setSelectedClass(""); setSearch(""); setValidationFilter("all");
   }
 
@@ -427,7 +434,7 @@ export default function AdminSiswaPage() {
             </label>
             <select
               value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
+              onChange={(e) => { setSelectedClass(e.target.value); setStudentPage(1); }}
               className="nb-input"
               id="filter-kelas"
             >
@@ -444,7 +451,7 @@ export default function AdminSiswaPage() {
             <Input
               placeholder="NISN, nama, atau kelas..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setStudentPage(1); }}
             />
           </div>
 
@@ -453,7 +460,7 @@ export default function AdminSiswaPage() {
             <label className="mb-1.5 block text-xs font-medium text-slate-600">Status Validasi</label>
             <select
               value={validationFilter}
-              onChange={(e) => setValidationFilter(e.target.value as "all" | "pending" | "validated")}
+              onChange={(e) => { setValidationFilter(e.target.value as "all" | "pending" | "validated"); setStudentPage(1); }}
               className="nb-input"
               id="filter-validasi"
             >
@@ -471,31 +478,31 @@ export default function AdminSiswaPage() {
             {selectedGrade && (
               <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 font-medium text-blue-700">
                 Tingkat: {selectedGrade}
-                <button onClick={() => handleGradeChange("")} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                <button aria-label="Hapus filter tingkat" onClick={() => handleGradeChange("")} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
               </span>
             )}
             {selectedSubClass && (
               <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2.5 py-1 font-medium text-violet-700">
                 Jurusan: {selectedSubClass}
-                <button onClick={() => handleSubClassChange("")} className="hover:text-violet-900"><X className="h-3 w-3" /></button>
+                <button aria-label="Hapus filter jurusan" onClick={() => handleSubClassChange("")} className="hover:text-violet-900"><X className="h-3 w-3" /></button>
               </span>
             )}
             {selectedClass && (
               <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-1 font-medium text-indigo-700">
                 Kelas: {selectedClass}
-                <button onClick={() => setSelectedClass("")} className="hover:text-indigo-900"><X className="h-3 w-3" /></button>
+                <button aria-label="Hapus filter kelas" onClick={() => setSelectedClass("")} className="hover:text-indigo-900"><X className="h-3 w-3" /></button>
               </span>
             )}
             {search && (
               <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">
                 Cari: "{search}"
-                <button onClick={() => setSearch("")} className="hover:text-slate-800"><X className="h-3 w-3" /></button>
+                <button aria-label="Hapus pencarian" onClick={() => setSearch("")} className="hover:text-slate-800"><X className="h-3 w-3" /></button>
               </span>
             )}
             {validationFilter !== "all" && (
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 font-medium text-emerald-700">
                 Validasi: {validationFilter === "validated" ? "Sudah" : "Belum"}
-                <button onClick={() => setValidationFilter("all")} className="hover:text-emerald-900"><X className="h-3 w-3" /></button>
+                <button aria-label="Hapus filter validasi" onClick={() => setValidationFilter("all")} className="hover:text-emerald-900"><X className="h-3 w-3" /></button>
               </span>
             )}
             <span className="text-slate-400">· {filtered.length} siswa ditemukan</span>
@@ -510,7 +517,7 @@ export default function AdminSiswaPage() {
       <div className="space-y-3 md:hidden">
         {filtered.length === 0 ? (
           <div className="nb-card p-8 text-center text-sm text-slate-400">Tidak ada data siswa yang cocok dengan kriteria.</div>
-        ) : filtered.map((student) => (
+        ) : paginatedFiltered.map((student) => (
           <article key={student.id} className="nb-card space-y-3 p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0"><p className="font-semibold text-slate-900">{student.name}</p><p className="font-mono text-xs text-slate-500">NISN: {student.nisn}</p>{student.email && <p className="truncate text-xs text-slate-400">{student.email}</p>}</div>
@@ -525,8 +532,8 @@ export default function AdminSiswaPage() {
             <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
               <button className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2 py-2 text-xs font-semibold text-blue-700" onClick={() => resetPassword(student)}><KeyRound className="h-3.5 w-3.5" /> Reset Kata Sandi</button>
               <Link className="inline-flex items-center justify-center rounded-lg border border-indigo-200 px-3 py-2 text-xs font-semibold text-indigo-700" href={detailHref(student.id)}><Eye className="mr-1 h-3.5 w-3.5" /> Detail</Link>
-              <button className="rounded-lg border border-slate-200 px-2.5 py-2 text-slate-500" onClick={() => startEdit(student)} title="Edit Siswa"><Edit className="h-4 w-4" /></button>
-              <button className="rounded-lg border border-red-100 px-2.5 py-2 text-red-500" onClick={() => deleteStudent(student)} title="Hapus Siswa"><Trash2 className="h-4 w-4" /></button>
+              <button aria-label={`Edit siswa ${student.name}`} className="rounded-lg border border-slate-200 px-2.5 py-2 text-slate-500" onClick={() => startEdit(student)} title="Edit Siswa"><Edit className="h-4 w-4" /></button>
+              <button aria-label={`Hapus siswa ${student.name}`} className="rounded-lg border border-red-100 px-2.5 py-2 text-red-500" onClick={() => deleteStudent(student)} title="Hapus Siswa"><Trash2 className="h-4 w-4" /></button>
             </div>
           </article>
         ))}
@@ -554,7 +561,7 @@ export default function AdminSiswaPage() {
                 </td>
               </tr>
             ) : (
-              filtered.map((student) => (
+              paginatedFiltered.map((student) => (
                 <tr key={student.id}>
                   <td className="font-mono text-xs text-slate-600">{student.nisn}</td>
                   <td>
@@ -596,19 +603,19 @@ export default function AdminSiswaPage() {
                       </button>
                       <button
                         className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
-                        onClick={() => startEdit(student)} title="Edit Siswa"
+                        onClick={() => startEdit(student)} title="Edit Siswa" aria-label={`Edit siswa ${student.name}`}
                       >
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
                         className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                        onClick={() => deleteStudent(student)} title="Hapus Siswa"
+                        onClick={() => deleteStudent(student)} title="Hapus Siswa" aria-label={`Hapus siswa ${student.name}`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
                       <Link
                         className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-                        href={detailHref(student.id)} title="Lihat Detail"
+                        href={detailHref(student.id)} title="Lihat Detail" aria-label={`Lihat detail siswa ${student.name}`}
                       >
                         <Eye className="h-4 w-4" />
                       </Link>
@@ -622,6 +629,16 @@ export default function AdminSiswaPage() {
       </div>
 
       {/* ── Export Modal ── */}
+      {filtered.length > studentsPerPage && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 text-xs">
+          <span className="text-slate-500">Halaman {studentPage} dari {totalStudentPages}</span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={studentPage === 1} onClick={() => setStudentPage((page) => Math.max(1, page - 1))}>Sebelumnya</Button>
+            <Button variant="outline" size="sm" disabled={studentPage === totalStudentPages} onClick={() => setStudentPage((page) => Math.min(totalStudentPages, page + 1))}>Berikutnya</Button>
+          </div>
+        </div>
+      )}
+
       <Dialog open={exportOpen} onOpenChange={setExportOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>

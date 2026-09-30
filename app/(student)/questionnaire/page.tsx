@@ -83,6 +83,13 @@ export default function QuestionnairePage() {
     });
   }
 
+  function retryQuestionnaireSync() {
+    try {
+      const draft = localStorage.getItem(`fmc-riasec-draft-${user?.id ?? "current"}`);
+      if (draft) persistAnswers(JSON.parse(draft));
+    } catch { setSaveStatus("offline"); }
+  }
+
   async function saveAll() {
     setSaving(true);
     try {
@@ -276,7 +283,7 @@ export default function QuestionnairePage() {
       {/* ── Navigation Buttons ── */}
       <div className="flex items-center justify-between gap-3 pt-0.5">
         <p className={`text-[11px] ${saveStatus === "offline" ? "text-amber-600" : "text-slate-400"}`}>
-          {saveStatus === "saving" ? "Menyimpan jawaban..." : saveStatus === "saved" ? "Jawaban tersimpan" : saveStatus === "offline" ? "Koneksi bermasalah. Jawaban disimpan di perangkat." : ""}
+          {saveStatus === "saving" ? "Menyimpan jawaban..." : saveStatus === "saved" ? "Jawaban tersimpan" : saveStatus === "offline" ? <>Koneksi bermasalah. <button type="button" onClick={retryQuestionnaireSync} className="font-semibold underline">Coba lagi</button></> : ""}
         </p>
         <Button
           variant="plain"

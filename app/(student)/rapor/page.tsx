@@ -101,6 +101,13 @@ export default function RaporPage() {
     }
   }
 
+  function retryScoreSync() {
+    try {
+      const draft = localStorage.getItem(`fmc-rapor-draft-${user?.id ?? "current"}`);
+      if (draft) persistDraft(JSON.parse(draft));
+    } catch { setSaveStatus("offline"); }
+  }
+
   function handleSemesterChange(
     subjectId: number,
     field: "sem1" | "sem2" | "sem3" | "sem4" | "sem5",
@@ -587,7 +594,7 @@ export default function RaporPage() {
       >
         <div className="flex items-center gap-3">
           <p className={`text-[11px] hidden sm:block ${saveStatus === "offline" ? "text-amber-600" : "text-slate-400"}`}>
-            {saveStatus === "saving" ? "Menyimpan otomatis..." : saveStatus === "saved" ? "Tersimpan" : saveStatus === "offline" ? "Offline: draft tersimpan di perangkat" : ""}
+            {saveStatus === "saving" ? "Menyimpan otomatis..." : saveStatus === "saved" ? "Tersimpan" : saveStatus === "offline" ? <>Offline: draft tersimpan. <button type="button" onClick={retryScoreSync} className="font-semibold underline">Coba lagi</button></> : ""}
           </p>
           <div className="h-9 w-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center font-bold text-indigo-600 shrink-0 text-sm">
             {filledSubjectCount}

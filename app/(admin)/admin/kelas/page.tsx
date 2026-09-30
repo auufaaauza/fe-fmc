@@ -416,6 +416,7 @@ export default function AdminKelasPage() {
                             onClick={(e) => handleOpenEdit(e, cls)}
                             className="p-2"
                             title="Edit Kelas"
+                            aria-label={`Edit kelas ${cls.name}`}
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
@@ -425,6 +426,7 @@ export default function AdminKelasPage() {
                             onClick={(e) => handleDelete(e, cls)}
                             className="p-2"
                             title="Hapus Kelas"
+                            aria-label={`Hapus kelas ${cls.name}`}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
