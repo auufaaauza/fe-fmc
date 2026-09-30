@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     async (identifier: string, password: string, role?: Role) => {
       const trimmed = identifier.trim();
-      const determinedRole: Role = role || (trimmed.includes("@") ? "admin" : "student");
+      const determinedRole: Role = role || (trimmed.includes("@") || trimmed.toLowerCase() === "admin" ? "admin" : "student");
 
       const payload = {
         role: determinedRole,
