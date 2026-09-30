@@ -65,6 +65,10 @@ export default function AdminSiswaPage() {
   const [selectedSubClass, setSelectedSubClass] = useState<string>(() => searchParams.get("subClass") || "");
   const [selectedClass, setSelectedClass] = useState<string>(() => searchParams.get("class") || "");
   const [search, setSearch] = useState(() => searchParams.get("search") || "");
+  const [validationFilter, setValidationFilter] = useState<"all" | "pending" | "validated">(() => {
+    const value = searchParams.get("validation");
+    return value === "pending" || value === "validated" ? value : "all";
+  });
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<StudentListItem | null>(null);
@@ -126,9 +130,10 @@ export default function AdminSiswaPage() {
       const matchesGrade = !selectedGrade || parseGrade(cls) === selectedGrade;
       const matchesSubClass = !selectedSubClass || parseSubClass(cls) === selectedSubClass;
       const matchesClass = !selectedClass || cls === selectedClass;
-      return matchesSearch && matchesGrade && matchesSubClass && matchesClass;
+      const matchesValidation = validationFilter === "all" || (validationFilter === "validated" ? s.is_validated : !s.is_validated);
+      return matchesSearch && matchesGrade && matchesSubClass && matchesClass && matchesValidation;
     });
-  }, [students, search, selectedGrade, selectedSubClass, selectedClass]);
+  }, [students, search, selectedGrade, selectedSubClass, selectedClass, validationFilter]);
 
   /** Reset lower-level filters when a higher-level filter changes */
   function handleGradeChange(val: string) {
@@ -141,7 +146,7 @@ export default function AdminSiswaPage() {
     setSelectedClass(""); // clear exact class when sub-class changes
   }
   function resetAllFilters() {
-    setSelectedGrade(""); setSelectedSubClass(""); setSelectedClass(""); setSearch("");
+    setSelectedGrade(""); setSelectedSubClass(""); setSelectedClass(""); setSearch(""); setValidationFilter("all");
   }
 
   function detailHref(studentId: number) {
@@ -150,6 +155,7 @@ export default function AdminSiswaPage() {
     if (selectedSubClass) query.set("subClass", selectedSubClass);
     if (selectedClass) query.set("class", selectedClass);
     if (search) query.set("search", search);
+    if (validationFilter !== "all") query.set("validation", validationFilter);
     return `/admin/siswa/${studentId}?${query.toString()}`;
   }
 
@@ -376,7 +382,7 @@ export default function AdminSiswaPage() {
           <Filter className="h-3.5 w-3.5" /> Filter Siswa
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-5">
           {/* ① Tingkat Kelas */}
           <div>
             <label className="mb-1.5 block text-xs font-medium text-slate-600">Tingkat Kelas</label>
@@ -441,10 +447,25 @@ export default function AdminSiswaPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+
+          {/* Status validasi */}
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-600">Status Validasi</label>
+            <select
+              value={validationFilter}
+              onChange={(e) => setValidationFilter(e.target.value as "all" | "pending" | "validated")}
+              className="nb-input"
+              id="filter-validasi"
+            >
+              <option value="all">Semua Status</option>
+              <option value="pending">Belum Divalidasi</option>
+              <option value="validated">Sudah Divalidasi</option>
+            </select>
+          </div>
         </div>
 
         {/* Active filter chips */}
-        {(selectedGrade || selectedSubClass || selectedClass || search) && (
+        {(selectedGrade || selectedSubClass || selectedClass || search || validationFilter !== "all") && (
           <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 text-xs">
             <span className="text-slate-500 font-medium">Filter aktif:</span>
             {selectedGrade && (
@@ -469,6 +490,12 @@ export default function AdminSiswaPage() {
               <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">
                 Cari: "{search}"
                 <button onClick={() => setSearch("")} className="hover:text-slate-800"><X className="h-3 w-3" /></button>
+              </span>
+            )}
+            {validationFilter !== "all" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 font-medium text-emerald-700">
+                Validasi: {validationFilter === "validated" ? "Sudah" : "Belum"}
+                <button onClick={() => setValidationFilter("all")} className="hover:text-emerald-900"><X className="h-3 w-3" /></button>
               </span>
             )}
             <span className="text-slate-400">· {filtered.length} siswa ditemukan</span>

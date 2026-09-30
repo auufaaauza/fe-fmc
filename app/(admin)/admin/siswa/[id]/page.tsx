@@ -35,7 +35,7 @@ export default function AdminStudentDetailPage() {
   const classId = searchParams.get("classId");
   const returnToStudentList = (() => {
     const query = new URLSearchParams();
-    ["grade", "subClass", "class", "search"].forEach((key) => {
+    ["grade", "subClass", "class", "search", "validation"].forEach((key) => {
       const value = searchParams.get(key);
       if (value) query.set(key, value);
     });
