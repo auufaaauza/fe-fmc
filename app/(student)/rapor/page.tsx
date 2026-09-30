@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Info, MoveHorizontal, Save } from "lucide-react";
+import { CheckCircle2, Info, Save } from "lucide-react";
 import { api } from "@/lib/axios";
 import type { StudentScore, Subject } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -288,9 +288,6 @@ export default function RaporPage() {
               ({table1Subjects.length} Mata Pelajaran)
             </span>
           </div>
-          <div className="flex items-center gap-1 text-[11px] text-slate-400 md:hidden">
-            <MoveHorizontal className="h-3.5 w-3.5" /> Geser tabel
-          </div>
         </div>
 
         {renderMobileSubjectCards(table1Subjects)}
@@ -440,9 +437,6 @@ export default function RaporPage() {
               <span className="text-xs text-slate-500">
                 ({table2Subjects.length} Mata Pelajaran)
               </span>
-            </div>
-            <div className="flex items-center gap-1 text-[11px] text-slate-400 md:hidden">
-              <MoveHorizontal className="h-3.5 w-3.5" /> Geser tabel
             </div>
           </div>
 
