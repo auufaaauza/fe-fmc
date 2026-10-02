@@ -1,4 +1,4 @@
-﻿# 🎓 Find My Career — Frontend App
+﻿# Find My Career — Frontend App
 
 > Antarmuka web untuk **Sistem Rekomendasi Program Studi Perguruan Tinggi** menggunakan metode SAW (Simple Additive Weighting).
 >
@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Deskripsi Proyek
+## Deskripsi Proyek
 
 **Find My Career App** adalah aplikasi web *frontend* yang dibangun dengan **Next.js 14** (App Router). Aplikasi ini menyediakan antarmuka yang intuitif bagi:
 
@@ -15,7 +15,7 @@
 
 ---
 
-## 🛠️ Teknologi yang Digunakan
+## Teknologi yang Digunakan
 
 | Teknologi | Versi | Keterangan |
 |---|---|---|
@@ -31,15 +31,15 @@
 
 ---
 
-## ✨ Fitur Utama
+## Fitur Utama
 
-### 🧑‍🎓 Halaman Siswa
+### Halaman Siswa
 - **Dashboard** — Ringkasan status pengisian rapor & kuesioner
 - **Rapor** — Form input nilai mata pelajaran per semester
 - **Kuesioner** — Pengisian 36 soal minat karir RIASEC
 - **Hasil** — Visualisasi peringkat rekomendasi program studi dengan nilai preferensi SAW
 
-### 👨‍🏫 Halaman Admin
+### Halaman Admin
 - **Dashboard Admin** — Statistik jumlah siswa, kelas, & status rekomendasi
 - **Manajemen Siswa** — CRUD siswa, reset password, catatan konseling, import/export Excel
 - **Manajemen Kelas** — Tambah, edit, hapus data kelas
@@ -47,38 +47,38 @@
 
 ---
 
-## 📂 Struktur Direktori
+## Struktur Direktori
 
 ```
 find-my-career-app/
 ├── app/
-│   ├── (auth)/              ← Halaman Login & Register
-│   ├── (student)/           ← Layout & halaman siswa
-│   │   ├── dashboard/       ← Dashboard siswa
-│   │   ├── rapor/           ← Input nilai rapor
-│   │   ├── questionnaire/   ← Kuesioner RIASEC
-│   │   └── hasil/           ← Hasil rekomendasi SAW
-│   └── (admin)/             ← Layout & halaman admin
+│   ├── (auth)/              <- Halaman Login & Register
+│   ├── (student)/           <- Layout & halaman siswa
+│   │   ├── dashboard/       <- Dashboard siswa
+│   │   ├── rapor/           <- Input nilai rapor
+│   │   ├── questionnaire/   <- Kuesioner RIASEC
+│   │   └── hasil/           <- Hasil rekomendasi SAW
+│   └── (admin)/             <- Layout & halaman admin
 │       └── admin/
-│           ├── dashboard/   ← Dashboard admin
-│           ├── siswa/       ← Manajemen siswa
-│           ├── kelas/       ← Manajemen kelas
-│           └── program-studi/ ← Manajemen program studi
+│           ├── dashboard/   <- Dashboard admin
+│           ├── siswa/       <- Manajemen siswa
+│           ├── kelas/       <- Manajemen kelas
+│           └── program-studi/ <- Manajemen program studi
 ├── components/
-│   ├── layout/              ← Sidebar, navbar, layout wrapper
-│   ├── recommendation/      ← Komponen hasil rekomendasi
-│   ├── shared/              ← Komponen bersama (tabel, modal, dsb.)
-│   └── ui/                  ← Komponen UI primitif
-├── context/                 ← React Context (auth, state global)
-├── hooks/                   ← Custom React hooks
-├── lib/                     ← Utilitas & konfigurasi axios
-├── types/                   ← TypeScript type definitions
-└── public/                  ← Aset statis
+│   ├── layout/              <- Sidebar, navbar, layout wrapper
+│   ├── recommendation/      <- Komponen hasil rekomendasi
+│   ├── shared/              <- Komponen bersama (tabel, modal, dsb.)
+│   └── ui/                  <- Komponen UI primitif
+├── context/                 <- React Context (auth, state global)
+├── hooks/                   <- Custom React hooks
+├── lib/                     <- Utilitas & konfigurasi axios
+├── types/                   <- TypeScript type definitions
+└── public/                  <- Aset statis
 ```
 
 ---
 
-## 🔗 Koneksi ke Backend
+## Koneksi ke Backend
 
 Aplikasi ini terhubung ke **Find My Career API** (Laravel 11).
 Konfigurasi URL backend di file `.env`:
@@ -91,7 +91,7 @@ Autentikasi menggunakan **Laravel Sanctum** berbasis cookie/token.
 
 ---
 
-## 🚀 Instalasi & Setup
+## Instalasi & Setup
 
 ### Prasyarat
 - Node.js `>= 18.x`
@@ -135,7 +135,7 @@ npm run lint
 
 ---
 
-## 📱 Halaman & Routing
+## Halaman & Routing
 
 | Path | Role | Deskripsi |
 |---|---|---|
@@ -152,13 +152,13 @@ npm run lint
 
 ---
 
-## 📄 Lisensi
+## Lisensi
 
-Proyek ini dibuat sebagai karya ilmiah **Tugas Akhir / Skripsi**.
+Proyek ini dibuat sebagai karya ilmiah Tugas Akhir / Skripsi.
 
 ---
 
-## 👤 Author
+## Author
 
 **auufaaauza** — [GitHub](https://github.com/auufaaauza)
 
